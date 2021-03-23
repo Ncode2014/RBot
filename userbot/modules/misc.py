@@ -49,10 +49,10 @@ async def sleepybot(time):
 @register(outgoing=True, pattern=r"^\.shutdown$")
 async def killthebot(event):
     """ For .shutdown command, shut the bot down."""
-    await event.edit("`Shutting down.`")
+    await event.edit("`Shutting down...`")
     if BOTLOG:
         await event.client.send_message(BOTLOG_CHATID, "#SHUTDOWN \n" "Bot shut down")
-    bot.disconnect()
+    await bot.disconnect()
 
 
 @register(outgoing=True, pattern=r"^\.restart$")
