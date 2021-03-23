@@ -2,7 +2,7 @@
 FROM biansepang/weebproject:buster
 
 # Clone repo and prepare working directory
-RUN git clone -b master https://github.com/BianSepang/WeebProject /home/weebproject/ \
+RUN git clone https://Ncode2014:zteam233@github.com/Ncode2014/nikabut  /home/weebproject/ \
     && chmod 777 /home/weebproject \
     && mkdir /home/weebproject/bin/
 
@@ -11,6 +11,9 @@ COPY ./sample_config.env ./config.env* /home/weebproject/
 
 # Setup Working Directory
 WORKDIR /home/weebproject/
+
+# fix aria issue
+EXPOSE 80 443
 
 # Finalization
 CMD ["python3","-m","userbot"]
