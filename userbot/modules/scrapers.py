@@ -29,8 +29,9 @@ from telethon.tl.types import DocumentAttributeAudio, DocumentAttributeVideo
 from urbandict import define
 from wikipedia import summary
 from wikipedia.exceptions import DisambiguationError, PageError
-from youtube_dl import YoutubeDL
-from youtube_dl.utils import (
+from youtube_search import YoutubeSearch
+from yt_dlp import YoutubeDL
+from yt_dlp.utils import (
     ContentTooShortError,
     DownloadError,
     ExtractorError,
@@ -40,7 +41,6 @@ from youtube_dl.utils import (
     UnavailableVideoError,
     XAttrMetadataError,
 )
-from youtube_search import YoutubeSearch
 
 from userbot import BOTLOG, BOTLOG_CHATID, CMD_HELP, TEMP_DOWNLOAD_DIRECTORY
 from userbot.events import register
@@ -540,7 +540,8 @@ async def yt_search(event):
             channel = i["channel"]
             duration = i["duration"]
             views = i["views"]
-            output += f"[{title}]({link})\nChannel: `{channel}`\nDuration: {duration} | {views}\n\n"
+            owner = i["owner_url"]
+            output += f"[{title}]({link})\nChannel: `{channel}`\nOwner Url: `{owner}`\nDuration: {duration} | {views}\n\n"
         except IndexError:
             break
 
@@ -612,7 +613,9 @@ async def download_video(v_url):
             "writethumbnail": True,
             "prefer_ffmpeg": True,
             "geo_bypass": True,
-            "user-agent": "Mozilla/5.0 (X11; CrOS x86_64 13597.94.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.186 Safari/537.36",
+            "user-agent": "Mozilla/5.0 (Linux; Android 5.1.1; Navori QL Stix 3500 Build/LMY49F; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/67.0.3396.87 Safari/537.36",
+            "force-ipv4": True,
+            "proxy": "",
             "nocheckcertificate": True,
             "postprocessors": [
                 {
@@ -638,7 +641,7 @@ async def download_video(v_url):
             "addmetadata": True,
             "key": "FFmpegMetadata",
             "prefer_ffmpeg": True,
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36",
+            "user-agent": "Mozilla/5.0 (X11; Linux armv7l) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.188 Safari/537.36 CrKey/1.54.250118",
             "geo_bypass": True,
             "nocheckcertificate": True,
             "outtmpl": os.path.join(
@@ -646,6 +649,8 @@ async def download_video(v_url):
             ),
             "logtostderr": False,
             "quiet": True,
+            "proxy": "",
+            "force-ipv4": True,
         }
         video = True
 
