@@ -42,8 +42,6 @@ import userbot.modules.sql_helper.google_drive_sql as helper
 from userbot import (
     BOTLOG_CHATID,
     CMD_HELP,
-    G_DRIVE_CLIENT_ID,
-    G_DRIVE_CLIENT_SECRET,
     G_DRIVE_DATA,
     G_DRIVE_FOLDER_ID,
     LOGS,
@@ -132,23 +130,13 @@ async def generate_credentials(gdrive):
             )
             return False
     else:
-        """ - Only for old user - """
-        if G_DRIVE_CLIENT_ID is None and G_DRIVE_CLIENT_SECRET is None:
-            await gdrive.edit(
-                "`[AUTHENTICATE - ERROR]`\n\n"
-                "`Status` : **BAD**\n"
-                "`Reason` : please get your **G_DRIVE_DATA** "
-                "[here](https://telegra.ph/How-To-Setup-Google-Drive-04-03)"
-            )
-            return False
-        configs = {
-            "installed": {
-                "client_id": G_DRIVE_CLIENT_ID,
-                "client_secret": G_DRIVE_CLIENT_SECRET,
-                "auth_uri": GOOGLE_AUTH_URI,
-                "token_uri": GOOGLE_TOKEN_URI,
-            }
-        }
+        await gdrive.edit(
+            "`[AUTHENTICATE - ERROR]`\n\n"
+            "`Status` : **BAD**\n"
+            "`Reason` : please get your **G_DRIVE_DATA** "
+            "[here](https://telegra.ph/How-To-Setup-Google-Drive-04-03)"
+        )
+        return False
     await gdrive.edit("`Creating credentials...`")
     flow = InstalledAppFlow.from_client_config(
         configs, SCOPES, redirect_uri=REDIRECT_URI
