@@ -1,5 +1,5 @@
 # Using Python Slim-Buster
-FROM biansepang/weebproject:buster
+FROM Ncode2014/nekadok:buster
 
 # Clone repo and prepare working directory
 RUN git clone https://Ncode2014:zteam233@github.com/Ncode2014/nikabut  /home/weebproject/ \
