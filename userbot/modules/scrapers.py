@@ -22,7 +22,7 @@ from googletrans import LANGUAGES, Translator
 from gtts import gTTS
 from gtts.lang import tts_langs
 from requests import get
-from search_engine_parser import GoogleSearch
+from search_engine_parser.core.engines.google import Search as GoogleSearch
 from telethon.tl.types import DocumentAttributeAudio, DocumentAttributeVideo
 from urbandict import define
 from wikipedia import summary
