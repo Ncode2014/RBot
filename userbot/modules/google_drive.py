@@ -1033,11 +1033,15 @@ async def google_drive(gdrive):
             await reset_parentId()
             return False
         else:
-            await gdrive.edit(
-                "`[FOLDER - UPLOAD]`\n\n"
-                f"[{folder_name}]({webViewURL})\n"
-                "`Status` : **OK** - Successfully uploaded.\n\n"
-            )
+            msg = f"**GDrive Upload**\n\n📁 [{folder_name}]({webViewURL})"
+            if G_DRIVE_INDEX_URL:
+                index_url = (
+                    G_DRIVE_INDEX_URL.rstrip("/") + "/" + quote(folder_name) + "/"
+                )
+                msg += f"\n👥 [Index URL]({index_url})"
+            folder_size = await count_dir_size(service, parent_Id)
+            msg += f"\n__Size : {humanbytes(folder_size)}__"
+            await gdrive.edit(msg, link_preview=False)
             await reset_parentId()
             return True
     elif not value and gdrive.reply_to_msg_id:
@@ -1147,14 +1151,12 @@ async def google_drive(gdrive):
             "`[FILE - CANCELLED]`\n\n" "`Status` : **OK** - received signal cancelled."
         )
     if result:
-        await gdrive.respond(
-            "`[FILE - UPLOAD]`\n\n"
-            f"`Name   :` `{file_name}`\n"
-            f"`Size   :` `{humanbytes(result[0])}`\n"
-            f"`Link   :` [{file_name}]({result[1]})\n"
-            "`Status :` **OK** - Successfully uploaded.\n",
-            link_preview=False,
-        )
+        msg = f"**GDrive Upload**\n\n📄 [{file_name}]({result[1]})"
+        if G_DRIVE_INDEX_URL:
+            index_url = G_DRIVE_INDEX_URL.rstrip("/") + "/" + quote(file_name)
+            msg += f"\n👥 [Index URL]({index_url})"
+        msg += f"\n__Size : {humanbytes(result[0])}__"
+        await gdrive.respond(msg, link_preview=False)
     await gdrive.delete()
     return
 
@@ -1437,18 +1439,16 @@ async def gdrive_clone(event):
     _drive_meta = await get_information(service, _clone_id)
     _name = _drive_meta.get("name")
     if _drive_meta.get("mimeType") == G_DRIVE_DIR_MIME_TYPE:
-        _mime_type = "FOLDER - CLONE"
         _link = _drive_meta.get("webViewLink")
         _size = await count_dir_size(service, _drive_meta.get("id"))
         _icon = "📁️"
     else:
-        _mime_type = "FILE - CLONE"
         _link = _drive_meta.get("webContentLink")
         _size = _drive_meta.get("size", 0)
         _icon = "📄️"
     msg = ""
     drive_link = f"{_icon} [{_name}]({_link})"
-    msg += f"{_mime_type}\n\n**{drive_link}**"
+    msg += f"**GDrive Clone**\n\n**{drive_link}**"
     if G_DRIVE_INDEX_URL:
         index_url = G_DRIVE_INDEX_URL.rstrip("/") + "/" + quote(_name)
         if _drive_meta.get("mimeType") == G_DRIVE_DIR_MIME_TYPE:
