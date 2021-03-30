@@ -28,6 +28,7 @@ import re
 import time
 from mimetypes import guess_type
 from os.path import getctime, isdir, isfile, join
+from urllib.parse import quote
 
 import requests
 from bs4 import BeautifulSoup
@@ -44,6 +45,7 @@ from userbot import (
     CMD_HELP,
     G_DRIVE_DATA,
     G_DRIVE_FOLDER_ID,
+    G_DRIVE_INDEX_URL,
     LOGS,
     TEMP_DOWNLOAD_DIRECTORY,
 )
@@ -1435,16 +1437,24 @@ async def gdrive_clone(event):
     _drive_meta = await get_information(service, _clone_id)
     _name = _drive_meta.get("name")
     if _drive_meta.get("mimeType") == G_DRIVE_DIR_MIME_TYPE:
-        _mime_type = "[FOLDER - CLONE]"
+        _mime_type = "FOLDER - CLONE"
         _link = _drive_meta.get("webViewLink")
         _size = await count_dir_size(service, _drive_meta.get("id"))
         _icon = "📁️"
     else:
-        _mime_type = "[FILE - CLONE]"
+        _mime_type = "FILE - CLONE"
         _link = _drive_meta.get("webContentLink")
         _size = _drive_meta.get("size", 0)
         _icon = "📄️"
-    msg = f"`{_mime_type}`\n\n{_icon} [{_name}]({_link})\nSize : `{humanbytes(int(_size))}`"
+    msg = ""
+    drive_link = f"{_icon} [{_name}]({_link})"
+    msg += f"{_mime_type}\n\n**{drive_link}**"
+    if G_DRIVE_INDEX_URL:
+        index_url = G_DRIVE_INDEX_URL.rstrip("/") + "/" + quote(_name)
+        if _drive_meta.get("mimeType") == G_DRIVE_DIR_MIME_TYPE:
+            index_url += "/"
+        msg += f"\n👤 **[Index URL]({index_url})**"
+    msg += f"\n__Size : {humanbytes(int(_size))}__"
     await event.edit(msg)
 
 
