@@ -57,6 +57,10 @@ telethon-session-sqlalchemy
 urbandict
 validators
 vcsi
+numpy
+Pillow
+eksipy
+pydub
 wikipedia
 wordcloud
 youtube_search
