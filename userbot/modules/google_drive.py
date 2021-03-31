@@ -289,13 +289,11 @@ async def download(gdrive, service, uri=None):
                 )
                 return reply
             else:
-                reply += (
-                    f"`{status}`\n\n"
-                    f"`Name   :` `{file_name}`\n"
-                    f"`Size   :` `{humanbytes(result[0])}`\n"
-                    f"`Link   :` [{file_name}]({result[1]})\n"
-                    "`Status :` **OK** - Successfully uploaded.\n\n"
-                )
+                reply += f"**GDrive Upload**\n\n📄 [{file_name}]({result[1]})"
+                if G_DRIVE_INDEX_URL:
+                    index_url = G_DRIVE_INDEX_URL.rstrip("/") + "/" + quote(file_name)
+                    reply += f"\n👥 [Index URL]({index_url})"
+                reply += f"\n__Size : {humanbytes(result[0])}__"
                 return reply
         else:
             status = status.replace("[FILE", "[FOLDER")
