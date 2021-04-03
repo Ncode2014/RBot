@@ -35,7 +35,7 @@ cmd = f"aria2c \
 --enable-rpc \
 --rpc-listen-all=false \
 --rpc-listen-port 6800 \
---max-connection-per-server=10 \
+--max-connection-per-server=13 \
 --rpc-max-request-size=1024M \
 --seed-time=0.01 \
 --max-upload-limit=5K \
