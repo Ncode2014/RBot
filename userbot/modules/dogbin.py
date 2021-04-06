@@ -15,26 +15,24 @@ DOGBIN_URL = "https://del.dog/"
 NEKOBIN_URL = "https://nekobin.com/"
 
 
-@register(outgoing=True, pattern=r"^\.paste(?: |$)([\s\S]*)")
+@register(outgoing=True, pattern=r"^\.paste( d)?([\s\S]*)")
 async def paste(pstl):
-    """For .paste command, pastes the text directly to dogbin."""
-    dogbin_final_url = ""
-    match = pstl.pattern_match.group(1).strip()
-    reply_id = pstl.reply_to_msg_id
+    """For .paste command, pastes the text directly to nekobin/dogbin"""
+    url_type = pstl.pattern_match.group(1)
+    match = pstl.pattern_match.group(2).strip()
+    replied = await pstl.get_reply_message()
 
-    if not match and not reply_id:
-        return await pstl.edit("`Elon Musk said I cannot paste void.`")
+    if not match and not pstl.is_reply:
+        return await pstl.edit("`What should i paste ?`")
 
     if match:
         message = match
-    elif reply_id:
-        message = await pstl.get_reply_message()
-        if message.media:
+    elif replied:
+        if replied.media:
             downloaded_file_name = await pstl.client.download_media(
-                message,
+                replied,
                 TEMP_DOWNLOAD_DIRECTORY,
             )
-            m_list = None
             with open(downloaded_file_name, "rb") as fd:
                 m_list = fd.readlines()
             message = ""
@@ -42,40 +40,46 @@ async def paste(pstl):
                 message += m.decode("UTF-8")
             os.remove(downloaded_file_name)
         else:
-            message = message.message
+            message = replied.message
 
-    # Dogbin
-    await pstl.edit("`Pasting text . . .`")
-    resp = post(DOGBIN_URL + "documents", data=message.encode("utf-8"))
-
-    if resp.status_code == 200:
-        response = resp.json()
-        key = response["key"]
-        dogbin_final_url = DOGBIN_URL + key
-
-        if response["isUrl"]:
+    if not url_type:
+        resp = post(NEKOBIN_URL + "api/documents", json={"content": message})
+        if resp.status_code == 201:
+            response = resp.json()
+            key = response["result"]["key"]
+            nekobin_final_url = NEKOBIN_URL + key
             reply_text = (
                 "`Pasted successfully!`\n\n"
-                f"[Shortened URL]({dogbin_final_url})\n\n"
-                "`Original(non-shortened) URLs`\n"
-                f"[Dogbin URL]({DOGBIN_URL}v/{key})\n"
-                f"[View RAW]({DOGBIN_URL}raw/{key})"
+                f"[Nekobin URL]({nekobin_final_url})\n"
+                f"[View RAW]({NEKOBIN_URL}raw/{key})"
             )
         else:
-            reply_text = (
-                "`Pasted successfully!`\n\n"
-                f"[Dogbin URL]({dogbin_final_url})\n"
-                f"[View RAW]({DOGBIN_URL}raw/{key})"
-            )
+            reply_text = "`Failed to reach Nekobin`"
     else:
-        reply_text = "`Failed to reach Dogbin`"
+        resp = post(DOGBIN_URL + "documents", data=message.encode("utf-8"))
+        if resp.status_code == 200:
+            response = resp.json()
+            key = response["key"]
+            dogbin_final_url = DOGBIN_URL + key
+
+            if response["isUrl"]:
+                reply_text = (
+                    "`Pasted successfully!`\n\n"
+                    f"[Shortened URL]({dogbin_final_url})\n\n"
+                    "`Original(non-shortened) URLs`\n"
+                    f"[Dogbin URL]({DOGBIN_URL}v/{key})\n"
+                    f"[View RAW]({DOGBIN_URL}raw/{key})"
+                )
+            else:
+                reply_text = (
+                    "`Pasted successfully!`\n\n"
+                    f"[Dogbin URL]({dogbin_final_url})\n"
+                    f"[View RAW]({DOGBIN_URL}raw/{key})"
+                )
+        else:
+            reply_text = "`Failed to reach Dogbin`"
 
     await pstl.edit(reply_text)
-    if BOTLOG:
-        await pstl.client.send_message(
-            BOTLOG_CHATID,
-            "Paste query was executed successfully",
-        )
 
 
 @register(outgoing=True, pattern=r"^\.getpaste(?: |$)(.*)")

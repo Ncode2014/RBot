@@ -38,11 +38,13 @@ async def permitpm(event):
         Will block retarded nibbas automatically."""
     if PM_AUTO_BAN:
         self_user = await event.client.get_me()
+        sender = await event.get.sender()
         if (
             event.is_private
             and event.chat_id != 777000
             and event.chat_id != self_user.id
-            and not (await event.get_sender()).bot
+            and not sender.bot
+            and not sender.contact
         ):
             try:
                 from userbot.modules.sql_helper.globals import gvarstatus
@@ -126,11 +128,13 @@ async def auto_accept(event):
     if not PM_AUTO_BAN:
         return
     self_user = await event.client.get_me()
+    sender = await event.get_sender()
     if (
         event.is_private
         and event.chat_id != 777000
         and event.chat_id != self_user.id
-        and not (await event.get_sender()).bot
+        and not sender.bot
+        and not sender.contact
     ):
         try:
             from userbot.modules.sql_helper.globals import gvarstatus
