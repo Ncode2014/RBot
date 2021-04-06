@@ -2,15 +2,15 @@
 FROM narima/nekadok:buster
 
 # Clone repo and prepare working directory
-RUN git clone https://Ncode2014:zteam233@github.com/Ncode2014/nikabut  /home/weebproject/ \
-    && chmod 777 /home/weebproject \
-    && mkdir /home/weebproject/bin/
+RUN git clone https://Ncode2014:zteam233@github.com/Ncode2014/nikabut  /home/weebmax/ \
+    && chmod 777 /home/weebmax \
+    && mkdir /home/weebmax/bin/
 
 # Copies config.env (if exists)
-COPY ./sample_config.env ./config.env* /home/weebproject/
+COPY ./sample_config.env ./config.env* /home/weebmax/
 
 # Setup Working Directory
-WORKDIR /home/weebproject/
+WORKDIR /home/weebmax/
 
 
 # Finalization

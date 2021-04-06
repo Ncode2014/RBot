@@ -29,5 +29,5 @@ pip-selfcheck.json
 # ignore log files
 
 *-weebproject.log
-
+*-weebmax.log
 ###
