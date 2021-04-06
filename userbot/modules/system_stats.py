@@ -133,11 +133,14 @@ async def amireallyalive(alive):
     """For .alive command, check if the bot is running."""
     logo = ALIVE_LOGO
     output = (
-        f"`WeebProject` is running on `{repo.active_branch.name}`\n"
+        f"`WeebMax` is running on `{repo.active_branch.name}`\n"
         "`====================================`\n"
         f"🐍 `Python         :` v{python_version()}\n"
         f"⚙️ `Telethon       :` v{version.__version__}\n"
         f"👤 `User           :` {DEFAULTUSER}\n"
+        "`====================================`\n"
+        f"`WeebMax Just A fork From Weebproject`\n"
+        f"`with some modification but credit still`\n"
         "`====================================`\n"
     )
     if ALIVE_LOGO:
