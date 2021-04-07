@@ -58,20 +58,24 @@ async def setlang(prog):
     await prog.edit(f"Language for carbon.now.sh set to {CARBONLANG}")
 
 # kang from doge-userbot
+
+
 @register(outgoing=True, pattern=r"^\.reddit (.*)")
 async def reddit(event):
     sub = event.pattern_match.group(1)
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36 Avast/77.2.2153.120',
-    }       
+    }
 
     if len(sub) < 1:
         await event.edit("`Please specify a Subreddit. Example: ``.reddit kopyamakarna`")
         return
 
-    source = get(f"https://www.reddit.com/r/{sub}/hot.json?limit=5", headers=headers).json()
+    source = get(
+        f"https://www.reddit.com/r/{sub}/hot.json?limit=5",
+        headers=headers).json()
 
-    if not "kind" in source:
+    if "kind" not in source:
         if source["error"] == 404:
             await event.edit("`No such Subreddit found.`")
         elif source["error"] == 429:
@@ -94,6 +98,7 @@ async def reddit(event):
         except Exception as e:
             print(e)
             await event.edit(message + "\n\n`" + data["selftext"] + "`")
+
 
 @register(outgoing=True, pattern=r"^\.twit (.*)")
 async def twit(event):
@@ -157,6 +162,7 @@ async def twit(event):
         await event.edit(f"**{akun}**\n{twit['time']}\n\n`{twit['text']}`\n\n💬{twit['replies']} 🔁{twit['retweets']} ❤️{twit['likes']}")
         return
 
+
 @register(outgoing=True, pattern=r"^\.carbon")
 async def carbon_api(e):
     """ A Wrapper for carbon.now.sh """
@@ -178,7 +184,8 @@ async def carbon_api(e):
     driver = await chrome()
     driver.get(url)
     await e.edit("`Processing...\n50%`")
-    driver.find_element_by_css_selector('[data-cy="quick-export-button"]').click()
+    driver.find_element_by_css_selector(
+        '[data-cy="quick-export-button"]').click()
     await e.edit("`Processing...\n75%`")
     # Waiting for downloading
     while not os.path.isfile(file_path):
@@ -234,7 +241,8 @@ async def img_sampler(event):
     await event.delete()
 
 
-@register(outgoing=True, pattern=r"^\.currency ([\d\.]+) ([a-zA-Z]+) ([a-zA-Z]+)")
+@register(outgoing=True,
+          pattern=r"^\.currency ([\d\.]+) ([a-zA-Z]+) ([a-zA-Z]+)")
 async def moni(event):
     c_from_val = float(event.pattern_match.group(1))
     c_from = (event.pattern_match.group(2)).upper()
@@ -436,13 +444,15 @@ async def imdb(e):
         movie_name = e.pattern_match.group(1)
         remove_space = movie_name.split(" ")
         final_name = "+".join(remove_space)
-        page = get("https://www.imdb.com/find?ref_=nv_sr_fn&q=" + final_name + "&s=all")
+        page = get(
+            "https://www.imdb.com/find?ref_=nv_sr_fn&q=" +
+            final_name +
+            "&s=all")
         soup = BeautifulSoup(page.content, "lxml")
         odds = soup.findAll("tr", "odd")
         mov_title = odds[0].findNext("td").findNext("td").text
-        mov_link = (
-            "http://www.imdb.com/" + odds[0].findNext("td").findNext("td").a["href"]
-        )
+        mov_link = ("http://www.imdb.com/" +
+                    odds[0].findNext("td").findNext("td").a["href"])
         page1 = get(mov_link)
         soup = BeautifulSoup(page1.content, "lxml")
         if soup.find("div", "poster"):
@@ -476,7 +486,8 @@ async def imdb(e):
             actors.pop()
             stars = actors[0] + "," + actors[1] + "," + actors[2]
         if soup.find("div", "inline canwrap"):
-            story_line = soup.find("div", "inline canwrap").findAll("p")[0].text
+            story_line = soup.find(
+                "div", "inline canwrap").findAll("p")[0].text
         else:
             story_line = "Not available"
         info = soup.findAll("div", "txt-block")
@@ -629,7 +640,10 @@ async def yt_search(event):
     await event.edit("`Processing...`")
 
     try:
-        results = json.loads(YoutubeSearch(query, max_results=counter).to_json())
+        results = json.loads(
+            YoutubeSearch(
+                query,
+                max_results=counter).to_json())
     except KeyError:
         return await event.edit(
             "`Youtube Search gone retard.\nCan't search this query!`"
@@ -817,9 +831,12 @@ CMD_HELP.update(
         "carbon": ">`.carbon <text> [or reply]`"
         "\nUsage: Beautify your code using carbon.now.sh\n"
         "Use .crblang <text> to set language for your code.",
-        "google": ">`.google <query>`" "\nUsage: Does a search on Google.",
-        "wiki": ">`.wiki <query>`" "\nUsage: Does a search on Wikipedia.",
-        "ud": ">`.ud <query>`" "\nUsage: Does a search on Urban Dictionary.",
+        "google": ">`.google <query>`"
+        "\nUsage: Does a search on Google.",
+        "wiki": ">`.wiki <query>`"
+        "\nUsage: Does a search on Wikipedia.",
+        "ud": ">`.ud <query>`"
+        "\nUsage: Does a search on Urban Dictionary.",
         "tts": ">`.tts <text> [or reply]`"
         "\nUsage: Translates text to speech for the language which is set."
         "\nUse >`.lang tts <language code>` to set language for tts. (Default is English.)",
@@ -829,11 +846,12 @@ CMD_HELP.update(
         "yt": ">`.yt` `<count> <query>`"
         "\nUsage: Does a YouTube search."
         "\nCan specify the number of results needed (default is 3).",
-        "imdb": ">`.imdb <movie-name>`" "\nUsage: Shows movie info and other stuff.",
+        "imdb": ">`.imdb <movie-name>`"
+        "\nUsage: Shows movie info and other stuff.",
         "rip": ">`.ripaudio <url> or ripvideo <url>`"
         "\nUsage: Download videos and songs from YouTube "
         "(and [many other sites](https://ytdl-org.github.io/youtube-dl/supportedsites.html)).",
-        "reddit": ">`.reddit <subreddit>`" "\nUsage: To see You Subreddit And Top Comment.",
-        "twit": ">`.twit <twitter_account>`" "\nUsage: To See a Twitter Account"
-    }
-)
+        "reddit": ">`.reddit <subreddit>`"
+        "\nUsage: To see You Subreddit And Top Comment.",
+        "twit": ">`.twit <twitter_account>`"
+        "\nUsage: To See a Twitter Account"})
