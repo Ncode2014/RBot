@@ -11,6 +11,7 @@ import os
 import re
 import shutil
 import time
+import twitter_scraper
 import subprocess
 from asyncio import sleep
 from re import findall
@@ -68,7 +69,7 @@ async def reddit(event):
         await event.edit("`Please specify a Subreddit. Example: ``.reddit kopyamakarna`")
         return
 
-    source = get(f"https://www.reddit.com/r/{sub}/hot.json?limit=1", headers=headers).json()
+    source = get(f"https://www.reddit.com/r/{sub}/hot.json?limit=5", headers=headers).json()
 
     if not "kind" in source:
         if source["error"] == 404:
@@ -770,5 +771,7 @@ CMD_HELP.update(
         "rip": ">`.ripaudio <url> or ripvideo <url>`"
         "\nUsage: Download videos and songs from YouTube "
         "(and [many other sites](https://ytdl-org.github.io/youtube-dl/supportedsites.html)).",
+        "reddit": ">`.reddit <subreddit>`" "\nUsage: To see You Subreddit And Top Comment.",
+        "twit": ">`.twit <twitter_account>`" "\nUsage: To See a Twitter Account"
     }
 )
