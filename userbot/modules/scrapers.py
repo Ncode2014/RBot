@@ -72,7 +72,7 @@ async def reddit(event):
         return
 
     source = get(
-        f"https://www.reddit.com/r/{sub}/hot.json?limit=5",
+        f"https://www.reddit.com/r/{sub}/hot.json?limit=1",
         headers=headers).json()
 
     if "kind" not in source:
