@@ -11,7 +11,7 @@ import os
 import re
 import shutil
 import time
-import twitter_scraper
+import twitterscraper
 import subprocess
 from asyncio import sleep
 from re import findall
