@@ -11,7 +11,6 @@ import os
 import re
 import shutil
 import time
-import twitterscraper
 import subprocess
 from asyncio import sleep
 from re import findall
@@ -98,69 +97,6 @@ async def reddit(event):
         except Exception as e:
             print(e)
             await event.edit(message + "\n\n`" + data["selftext"] + "`")
-
-
-@register(outgoing=True, pattern=r"^\.twit (.*)")
-async def twit(event):
-    akun = event.pattern_match.group(1)
-    if len(akun) < 1:
-        await event.edit("`Please specify a Twitter account. example: ``.twit st4r_m0rn1ng`")
-        return
-    try:
-        twits = list(twitter_scraper.get_tweets(akun, pages=1))
-    except Exception as e:
-        await event.edit(f"`Probably no such account. Because the error occurred. error: {e}`")
-        return
-
-    if len(twits) > 2:
-        if twits[0]["tweetId"] < twits[1]["tweetId"]:
-            twit = twits[1]
-            photos = twit['entries']['photos']
-            result = []
-            if len(photos) >= 1:
-                i = 0
-                while i < len(photos):
-                    with open(f"{akun}-{i}.jpg", 'wb') as load:
-                        load.write(get(photos[i]).content)
-                    result.append(f"{akun}-{i}.jpg")
-                    i += 1
-                await event.client.send_file(event.chat_id, result, caption=f"**{akun}**\n{twit['time']}\n\n`{twit['text']}`\n\n💬{twit['replies']} 🔁{twit['retweets']} ❤️{twit['likes']}")
-                await event.delete()
-                return
-            await event.edit(f"**{akun}**\n{twit['time']}\n\n`{twit['text']}`\n\n💬{twit['replies']} 🔁{twit['retweets']} ❤️{twit['likes']}")
-        else:
-            twit = twits[1]
-            photos = twit['entries']['photos']
-            result = []
-            if len(photos) >= 1:
-                i = 0
-                while i < len(photos):
-                    with open(f"{akun}-{i}.jpg", 'wb') as load:
-                        load.write(get(photos[i]).content)
-                    result.append(f"{akun}-{i}.jpg")
-                    i += 1
-                print(result)
-                await event.client.send_file(event.chat_id, result, caption=f"**{akun}**\n{twit['time']}\n\n`{twit['text']}`\n\n💬{twit['replies']} 🔁{twit['retweets']} ❤️{twit['likes']}")
-                await event.delete()
-                return
-            await event.edit(f"**{akun}**\n{twit['time']}\n\n`{twit['text']}`\n\n💬{twit['replies']} 🔁{twit['retweets']} ❤️{twit['likes']}")
-        return
-    else:
-        twit = twits[0]
-        photos = twit['entries']['photos']
-        result = []
-        if len(photos) >= 1:
-            i = 0
-            while i < len(photos):
-                with open(f"{akun}-{i}.jpg", 'wb') as load:
-                    load.write(get(photos[i]).content)
-                result.append(f"{akun}-{i}.jpg")
-                i += 1
-            await event.client.send_file(event.chat_id, result, caption=f"**{akun}**\n{twit['time']}\n\n`{twit['text']}`\n\n💬{twit['replies']} 🔁{twit['retweets']} ❤️{twit['likes']}")
-            await event.delete()
-            return
-        await event.edit(f"**{akun}**\n{twit['time']}\n\n`{twit['text']}`\n\n💬{twit['replies']} 🔁{twit['retweets']} ❤️{twit['likes']}")
-        return
 
 
 @register(outgoing=True, pattern=r"^\.carbon")
@@ -852,6 +788,4 @@ CMD_HELP.update(
         "\nUsage: Download videos and songs from YouTube "
         "(and [many other sites](https://ytdl-org.github.io/youtube-dl/supportedsites.html)).",
         "reddit": ">`.reddit <subreddit>`"
-        "\nUsage: To see You Subreddit And Top Comment.",
-        "twit": ">`.twit <twitter_account>`"
-        "\nUsage: To See a Twitter Account"})
+        "\nUsage: To see You Subreddit And Top Comment."})
