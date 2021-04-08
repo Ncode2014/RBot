@@ -21,6 +21,7 @@ async def paste(pstl):
     url_type = pstl.pattern_match.group(1)
     match = pstl.pattern_match.group(2).strip()
     replied = await pstl.get_reply_message()
+    f_ext = ".txt"
 
     if not match and not pstl.is_reply:
         return await pstl.edit("`What should i paste ?`")
@@ -33,11 +34,15 @@ async def paste(pstl):
                 replied,
                 TEMP_DOWNLOAD_DIRECTORY,
             )
-            with open(downloaded_file_name, "rb") as fd:
-                m_list = fd.readlines()
+            f_ext = os.path.splitext(downloaded_file_name)[-1]
+            with open(downloaded_file_name) as fd:
+                try:
+                    m_list = fd.readlines()
+                except UnicodeDecodeError:
+                    return await pstl.edit("`Can't paste this file.`")
             message = ""
             for m in m_list:
-                message += m.decode("UTF-8")
+                message += m
             os.remove(downloaded_file_name)
         else:
             message = replied.message
@@ -47,7 +52,7 @@ async def paste(pstl):
         if resp.status_code == 201:
             response = resp.json()
             key = response["result"]["key"]
-            nekobin_final_url = NEKOBIN_URL + key
+            nekobin_final_url = NEKOBIN_URL + key + f_ext
             reply_text = (
                 "`Pasted successfully!`\n\n"
                 f"[Nekobin URL]({nekobin_final_url})\n"
@@ -60,7 +65,7 @@ async def paste(pstl):
         if resp.status_code == 200:
             response = resp.json()
             key = response["key"]
-            dogbin_final_url = DOGBIN_URL + key
+            dogbin_final_url = DOGBIN_URL + key + f_ext
 
             if response["isUrl"]:
                 reply_text = (
