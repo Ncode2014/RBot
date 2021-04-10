@@ -64,7 +64,7 @@ async def mention_afk(mention):
             afk_str = f"`{int(seconds)}s` ago"
 
         is_bot = False
-        if (sender := await mention.get_sender()) :
+        if sender := await mention.get_sender():
             is_bot = sender.bot
             if is_bot:
                 return  # ignore bot

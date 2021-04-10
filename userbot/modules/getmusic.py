@@ -8,11 +8,10 @@ import shutil
 import subprocess
 import time
 
-import pydeezloader
+import deezloader
 from hachoir.metadata import extractMetadata
 from hachoir.parser import createParser
 from pylast import User
-from telethon import events
 from telethon.errors.rpcerrorlist import YouBlockedUserError
 from telethon.tl.types import DocumentAttributeAudio, DocumentAttributeVideo
 
@@ -254,7 +253,7 @@ async def _(event):
         return
 
     strings = {
-        "name": "PyDeezLoad",
+        "name": "DeezLoad",
         "arl_token_cfg_doc": "ARL Token for Deezer",
         "invalid_arl_token": "please set the required variables for this module",
         "wrong_cmd_syntax": "bruh, now i think how far should we go. please terminate my Session.",
@@ -270,7 +269,7 @@ async def _(event):
         return
 
     try:
-        download = pydeezloader.Login(ARL_TOKEN)
+        loader = deezloader.Login(ARL_TOKEN)
     except Exception as er:
         await event.edit(str(er))
         return
@@ -286,7 +285,7 @@ async def _(event):
 
     if "spotify" in required_link:
         if "track" in required_link:
-            required_track = download.download_trackspo(
+            required_track = loader.download_trackspo(
                 required_link,
                 output=temp_dl_path,
                 quality=required_qty,
@@ -300,7 +299,7 @@ async def _(event):
             await event.delete()
 
         elif "album" in required_link:
-            reqd_albums = download.download_albumspo(
+            reqd_albums = loader.download_albumspo(
                 required_link,
                 output=temp_dl_path,
                 quality=required_qty,
@@ -317,7 +316,7 @@ async def _(event):
 
     elif "deezer" in required_link:
         if "track" in required_link:
-            required_track = download.download_trackdee(
+            required_track = loader.download_trackdee(
                 required_link,
                 output=temp_dl_path,
                 quality=required_qty,
@@ -331,7 +330,7 @@ async def _(event):
             await event.delete()
 
         elif "album" in required_link:
-            reqd_albums = download.download_albumdee(
+            reqd_albums = loader.download_albumdee(
                 required_link,
                 output=temp_dl_path,
                 quality=required_qty,
@@ -343,7 +342,7 @@ async def _(event):
             await event.edit(strings["uploading"])
             for required_track in reqd_albums:
                 await upload_track(required_track, event)
-            shutil.rmtree(temp_dl_fpath)
+            shutil.rmtree(temp_dl_path)
             await event.delete()
 
     else:
@@ -401,10 +400,6 @@ CMD_HELP.update(
         "\nUsage: Finding and uploading song.\n\n"
         ">`.vsong` **Artist - Song Title**"
         "\nUsage: Finding and uploading videoclip.\n\n"
-        ">`.smd` **Artist - Song Title**"
-        "\nUsage: Download music from spotify use `@SpotifyMusicDownloaderBot`.\n\n"
-        ">`.smd now`"
-        "\nUsage: Download current LastFM scrobble use `@SpotifyMusicDownloaderBot`.\n\n"
         ">`.net` **Artist - Song Title**"
         "\nUsage: Download music use `@WooMaiBot`.\n\n"
         ">`.net now`"

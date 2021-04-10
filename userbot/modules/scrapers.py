@@ -11,7 +11,6 @@ import os
 import re
 import shutil
 import time
-import subprocess
 from asyncio import sleep
 from re import findall
 from urllib.error import HTTPError
@@ -22,13 +21,14 @@ from emoji import get_emoji_regexp
 from googletrans import LANGUAGES, Translator
 from gtts import gTTS
 from gtts.lang import tts_langs
+from hachoir.metadata import extractMetadata
+from hachoir.parser import createParser
 from requests import get
 from search_engine_parser.core.engines.google import Search as GoogleSearch
 from telethon.tl.types import DocumentAttributeAudio, DocumentAttributeVideo
 from urbandict import define
 from wikipedia import summary
 from wikipedia.exceptions import DisambiguationError, PageError
-from youtube_search import YoutubeSearch
 from youtube_dl import YoutubeDL
 from youtube_dl.utils import (
     ContentTooShortError,
@@ -40,6 +40,7 @@ from youtube_dl.utils import (
     UnavailableVideoError,
     XAttrMetadataError,
 )
+from youtube_search import YoutubeSearch
 
 from userbot import BOTLOG, BOTLOG_CHATID, CMD_HELP, TEMP_DOWNLOAD_DIRECTORY
 from userbot.events import register
@@ -56,6 +57,7 @@ async def setlang(prog):
     CARBONLANG = prog.pattern_match.group(1)
     await prog.edit(f"Language for carbon.now.sh set to {CARBONLANG}")
 
+
 # kang from doge-userbot
 
 
@@ -63,16 +65,18 @@ async def setlang(prog):
 async def reddit(event):
     sub = event.pattern_match.group(1)
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36 Avast/77.2.2153.120',
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36 Avast/77.2.2153.120",
     }
 
     if len(sub) < 1:
-        await event.edit("`Please specify a Subreddit. Example: ``.reddit kopyamakarna`")
+        await event.edit(
+            "`Please specify a Subreddit. Example: ``.reddit kopyamakarna`"
+        )
         return
 
     source = get(
-        f"https://www.reddit.com/r/{sub}/hot.json?limit=1",
-        headers=headers).json()
+        f"https://www.reddit.com/r/{sub}/hot.json?limit=1", headers=headers
+    ).json()
 
     if "kind" not in source:
         if source["error"] == 404:
@@ -80,7 +84,9 @@ async def reddit(event):
         elif source["error"] == 429:
             await event.edit("`Reddit warns you to slow down.`")
         else:
-            await event.edit("`Something happened but ... I don't know why it happened.`")
+            await event.edit(
+                "`Something happened but ... I don't know why it happened.`"
+            )
         return
     else:
         await event.edit("`Data fetching...`")
@@ -89,7 +95,7 @@ async def reddit(event):
         message = f"**{data['title']}**\n⬆️{data['score']}\n\nBy: __u/{data['author']}__\n\n[Link](https://reddit.com{data['permalink']})"
         try:
             image = data["url"]
-            with open(f"reddit.jpg", 'wb') as load:
+            with open(f"reddit.jpg", "wb") as load:
                 load.write(get(image).content)
 
             await event.client.send_file(event.chat_id, "reddit.jpg", caption=message)
@@ -120,8 +126,7 @@ async def carbon_api(e):
     driver = await chrome()
     driver.get(url)
     await e.edit("`Processing...\n50%`")
-    driver.find_element_by_css_selector(
-        '[data-cy="quick-export-button"]').click()
+    driver.find_element_by_css_selector('[data-cy="quick-export-button"]').click()
     await e.edit("`Processing...\n75%`")
     # Waiting for downloading
     while not os.path.isfile(file_path):
@@ -177,8 +182,7 @@ async def img_sampler(event):
     await event.delete()
 
 
-@register(outgoing=True,
-          pattern=r"^\.currency ([\d\.]+) ([a-zA-Z]+) ([a-zA-Z]+)")
+@register(outgoing=True, pattern=r"^\.currency ([\d\.]+) ([a-zA-Z]+) ([a-zA-Z]+)")
 async def moni(event):
     c_from_val = float(event.pattern_match.group(1))
     c_from = (event.pattern_match.group(2)).upper()
@@ -380,15 +384,13 @@ async def imdb(e):
         movie_name = e.pattern_match.group(1)
         remove_space = movie_name.split(" ")
         final_name = "+".join(remove_space)
-        page = get(
-            "https://www.imdb.com/find?ref_=nv_sr_fn&q=" +
-            final_name +
-            "&s=all")
+        page = get("https://www.imdb.com/find?ref_=nv_sr_fn&q=" + final_name + "&s=all")
         soup = BeautifulSoup(page.content, "lxml")
         odds = soup.findAll("tr", "odd")
         mov_title = odds[0].findNext("td").findNext("td").text
-        mov_link = ("http://www.imdb.com/" +
-                    odds[0].findNext("td").findNext("td").a["href"])
+        mov_link = (
+            "http://www.imdb.com/" + odds[0].findNext("td").findNext("td").a["href"]
+        )
         page1 = get(mov_link)
         soup = BeautifulSoup(page1.content, "lxml")
         if soup.find("div", "poster"):
@@ -422,8 +424,7 @@ async def imdb(e):
             actors.pop()
             stars = actors[0] + "," + actors[1] + "," + actors[2]
         if soup.find("div", "inline canwrap"):
-            story_line = soup.find(
-                "div", "inline canwrap").findAll("p")[0].text
+            story_line = soup.find("div", "inline canwrap").findAll("p")[0].text
         else:
             story_line = "Not available"
         info = soup.findAll("div", "txt-block")
@@ -576,10 +577,7 @@ async def yt_search(event):
     await event.edit("`Processing...`")
 
     try:
-        results = json.loads(
-            YoutubeSearch(
-                query,
-                max_results=counter).to_json())
+        results = json.loads(YoutubeSearch(query, max_results=counter).to_json())
     except KeyError:
         return await event.edit(
             "`Youtube Search gone retard.\nCan't search this query!`"
@@ -680,14 +678,15 @@ async def download_video(v_url):
     c_time = time.time()
     if song:
         await v_url.edit(
-            f"`Preparing to upload song:`\n**{rip_data['title']}**"
-            f"\nby **{rip_data['uploader']}**"
+            f"`Preparing to upload song:`\n**{rip_data.get('title')}**"
+            f"\nby **{rip_data.get('uploader')}**"
         )
-        with open(rip_data["id"] + ".mp3", "rb") as f:
+        f_name = rip_data.get("id") + ".mp3"
+        with open(f_name, "rb") as f:
             result = await upload_file(
                 client=v_url.client,
                 file=f,
-                name=f"{rip_data['id']}.mp3",
+                name=f_name,
                 progress_callback=lambda d, t: asyncio.get_event_loop().create_task(
                     progress(
                         d, t, v_url, c_time, "Uploading..", f"{rip_data['title']}.mp3"
@@ -701,54 +700,69 @@ async def download_video(v_url):
             if any(fn_img.endswith(ext_img) for ext_img in img_extensions)
         ]
         thumb_image = img_filenames[0]
+        metadata = extractMetadata(createParser(f_name))
+        duration = 0
+        if metadata.has("duration"):
+            duration = metadata.get("duration").seconds
         await v_url.client.send_file(
             v_url.chat_id,
             result,
             supports_streaming=True,
             attributes=[
                 DocumentAttributeAudio(
-                    duration=int(rip_data["duration"]),
-                    title=str(rip_data["title"]),
-                    performer=str(rip_data["uploader"]),
+                    duration=duration,
+                    title=rip_data.get("title"),
+                    performer=rip_data.get("uploader"),
                 )
             ],
             thumb=thumb_image,
         )
         os.remove(thumb_image)
-        os.remove(f"{rip_data['id']}.mp3")
+        os.remove(f_name)
         await v_url.delete()
     elif video:
         await v_url.edit(
-            f"`Preparing to upload video:`\n**{rip_data['title']}**"
-            f"\nby **{rip_data['uploader']}**"
+            f"`Preparing to upload video:`\n**{rip_data.get('title')}**"
+            f"\nby **{rip_data.get('uploader')}**"
         )
-        thumb_image = await get_video_thumb(rip_data["id"] + ".mp4", "thumb.png")
-        with open(rip_data["id"] + ".mp4", "rb") as f:
+        f_name = rip_data.get("id") + ".mp4"
+        with open(f_name, "rb") as f:
             result = await upload_file(
                 client=v_url.client,
                 file=f,
-                name=f"{rip_data['id']}.mp4",
+                name=f_name,
                 progress_callback=lambda d, t: asyncio.get_event_loop().create_task(
                     progress(
                         d, t, v_url, c_time, "Uploading..", f"{rip_data['title']}.mp4"
                     )
                 ),
             )
+        thumb_image = await get_video_thumb(f_name, "thumb.png")
+        metadata = extractMetadata(createParser(f_name))
+        duration = 0
+        width = 0
+        height = 0
+        if metadata.has("duration"):
+            duration = metadata.get("duration").seconds
+        if metadata.has("width"):
+            width = metadata.get("width")
+        if metadata.has("height"):
+            height = metadata.get("height")
         await v_url.client.send_file(
             v_url.chat_id,
             result,
             thumb=thumb_image,
             attributes=[
                 DocumentAttributeVideo(
-                    duration=rip_data["duration"],
-                    w=rip_data["width"],
-                    h=rip_data["height"],
+                    duration=duration,
+                    w=width,
+                    h=height,
                     supports_streaming=True,
                 )
             ],
             caption=rip_data["title"],
         )
-        os.remove(f"{rip_data['id']}.mp4")
+        os.remove(f_name)
         os.remove(thumb_image)
         await v_url.delete()
 
@@ -767,12 +781,9 @@ CMD_HELP.update(
         "carbon": ">`.carbon <text> [or reply]`"
         "\nUsage: Beautify your code using carbon.now.sh\n"
         "Use .crblang <text> to set language for your code.",
-        "google": ">`.google <query>`"
-        "\nUsage: Does a search on Google.",
-        "wiki": ">`.wiki <query>`"
-        "\nUsage: Does a search on Wikipedia.",
-        "ud": ">`.ud <query>`"
-        "\nUsage: Does a search on Urban Dictionary.",
+        "google": ">`.google <query>`" "\nUsage: Does a search on Google.",
+        "wiki": ">`.wiki <query>`" "\nUsage: Does a search on Wikipedia.",
+        "ud": ">`.ud <query>`" "\nUsage: Does a search on Urban Dictionary.",
         "tts": ">`.tts <text> [or reply]`"
         "\nUsage: Translates text to speech for the language which is set."
         "\nUse >`.lang tts <language code>` to set language for tts. (Default is English.)",
@@ -782,10 +793,11 @@ CMD_HELP.update(
         "yt": ">`.yt` `<count> <query>`"
         "\nUsage: Does a YouTube search."
         "\nCan specify the number of results needed (default is 3).",
-        "imdb": ">`.imdb <movie-name>`"
-        "\nUsage: Shows movie info and other stuff.",
+        "imdb": ">`.imdb <movie-name>`" "\nUsage: Shows movie info and other stuff.",
         "rip": ">`.ripaudio <url> or ripvideo <url>`"
         "\nUsage: Download videos and songs from YouTube "
         "(and [many other sites](https://ytdl-org.github.io/youtube-dl/supportedsites.html)).",
         "reddit": ">`.reddit <subreddit>`"
-        "\nUsage: To see You Subreddit And Top Comment."})
+        "\nUsage: To see You Subreddit And Top Comment.",
+    }
+)

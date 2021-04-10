@@ -802,8 +802,8 @@ async def vapor(vpr):
         return await vpr.edit("`Ｇｉｖｅ ｓｏｍｅ ｔｅｘｔ ｆｏｒ ｖａｐｏｒ！`")
 
     for charac in message:
-        if 0x21 <= ord(charac) <= 0x7F:
-            reply_text.append(chr(ord(charac) + 0xFEE0))
+        if 0x21 <= ord(charac) <= 0x7f:
+            reply_text.append(chr(ord(charac) + 0xfee0))
         elif ord(charac) == 0x20:
             reply_text.append(chr(0x3000))
         else:
