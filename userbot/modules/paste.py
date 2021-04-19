@@ -8,7 +8,7 @@ import os
 
 from requests import exceptions, get, post
 
-from userbot import BOTLOG, BOTLOG_CHATID, CMD_HELP, TEMP_DOWNLOAD_DIRECTORY
+from userbot import CMD_HELP, TEMP_DOWNLOAD_DIRECTORY
 from userbot.events import register
 
 DOGBIN_URL = "https://del.dog/"
@@ -24,7 +24,7 @@ async def paste(pstl):
     f_ext = ".txt"
 
     if not match and not pstl.is_reply:
-        return await pstl.edit("`What should i paste ?`")
+        return await pstl.edit("`What should i paste...?`")
 
     if match:
         message = match
@@ -46,6 +46,7 @@ async def paste(pstl):
             message = replied.message
 
     if not url_type:
+        await pstl.edit("`Pasting to Nekobin...`")
         resp = post(NEKOBIN_URL + "api/documents", json={"content": message})
         if resp.status_code == 201:
             response = resp.json()
@@ -57,8 +58,9 @@ async def paste(pstl):
                 f"[View RAW]({NEKOBIN_URL}raw/{key})"
             )
         else:
-            reply_text = "`Failed to reach Nekobin`"
+            reply_text = "`Failed to reach Nekobin.`"
     else:
+        await pstl.edit("`Pasting to Dogbin...`")
         resp = post(DOGBIN_URL + "documents", data=message.encode("utf-8"))
         if resp.status_code == 200:
             response = resp.json()
@@ -80,7 +82,7 @@ async def paste(pstl):
                     f"[View RAW]({DOGBIN_URL}raw/{key})"
                 )
         else:
-            reply_text = "`Failed to reach Dogbin`"
+            reply_text = "`Failed to reach Dogbin.`"
 
     await pstl.edit(reply_text)
 
@@ -131,70 +133,12 @@ async def get_dogbin_content(dog_url):
     )
 
     await dog_url.edit(reply_text)
-    if BOTLOG:
-        await dog_url.client.send_message(
-            BOTLOG_CHATID,
-            "Get dogbin content query was executed successfully",
-        )
-
-
-@register(outgoing=True, pattern=r"^\.neko(?: |$)([\s\S]*)")
-async def neko(nekobin):
-    """For .paste command, pastes the text directly to dogbin."""
-    nekobin_final_url = ""
-    match = nekobin.pattern_match.group(1).strip()
-    reply_id = nekobin.reply_to_msg_id
-
-    if not match and not reply_id:
-        return await nekobin.edit("`Cannot paste text.`")
-
-    if match:
-        message = match
-    elif reply_id:
-        message = await nekobin.get_reply_message()
-        if message.media:
-            downloaded_file_name = await nekobin.client.download_media(
-                message,
-                TEMP_DOWNLOAD_DIRECTORY,
-            )
-            m_list = None
-            with open(downloaded_file_name, "rb") as fd:
-                m_list = fd.readlines()
-            message = "".join(m.decode("UTF-8") for m in m_list)
-            os.remove(downloaded_file_name)
-        else:
-            message = message.text
-
-    # Nekobin
-    await nekobin.edit("`Pasting text . . .`")
-    resp = post(NEKOBIN_URL + "api/documents", json={"content": message})
-
-    if resp.status_code == 201:
-        response = resp.json()
-        key = response["result"]["key"]
-        nekobin_final_url = NEKOBIN_URL + key
-        reply_text = (
-            "`Pasted successfully!`\n\n"
-            f"[Nekobin URL]({nekobin_final_url})\n"
-            f"[View RAW]({NEKOBIN_URL}raw/{key})"
-        )
-    else:
-        reply_text = "`Failed to reach Nekobin`"
-
-    await nekobin.edit(reply_text)
-    if BOTLOG:
-        await nekobin.client.send_message(
-            BOTLOG_CHATID,
-            "Paste query was executed successfully",
-        )
 
 
 CMD_HELP.update(
     {
-        "paste": ">`.paste <text/reply>`"
-        "\nUsage: Create a paste or a shortened url using dogbin (https://del.dog/)"
-        "\n\n>`.neko <text/reply>`"
-        "\nUsage: Create a paste or a shortened url using nekobin (https://nekobin.com/)"
+        "paste": ">`.paste` or `.paste d` <text/reply>"
+        "\nUsage: Paste your text to Nekobin or Dogbin"
         "\n\n>`.getpaste`"
         "\nUsage: Gets the content of a paste or shortened url from dogbin (https://del.dog/)"
     }

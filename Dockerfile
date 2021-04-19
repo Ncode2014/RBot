@@ -2,7 +2,7 @@
 FROM narima/nekadok:buster
 
 # Clone repo and prepare working directory
-RUN git clone https://Ncode2014:zteam233@github.com/Ncode2014/nikabut  /home/weebmax/ \
+RUN git clone https://github.com/Ncode2014/nikabut  /home/weebmax/ \
     && chmod 777 /home/weebmax \
     && mkdir /home/weebmax/bin/
 

@@ -144,10 +144,9 @@ async def download_api(dl):
     await dl.edit("`Getting information...`")
     driver.get(URL)
     error = driver.find_elements_by_class_name("swal2-content")
-    if len(error) > 0:
-        if error[0].text == "File Not Found.":
-            await dl.edit(f"`FileNotFoundError`: {URL} is not found.")
-            return
+    if len(error) > 0 and error[0].text == "File Not Found.":
+        await dl.edit(f"`FileNotFoundError`: {URL} is not found.")
+        return
     datas = driver.find_elements_by_class_name("download__meta")
     """ - enumerate data to make sure we download the matched version - """
     md5_origin = None
@@ -162,10 +161,7 @@ async def download_api(dl):
             break
     if md5_origin is None and i is None:
         await dl.edit("`There is no match version available...`")
-    if URL.endswith("/"):
-        file_name = URL.split("/")[-2]
-    else:
-        file_name = URL.split("/")[-1]
+    file_name = URL.split("/")[-2] if URL.endswith("/") else URL.split("/")[-1]
     file_path = TEMP_DOWNLOAD_DIRECTORY + file_name
     download = driver.find_elements_by_class_name("download__btn")[i]
     download.click()
@@ -174,7 +170,7 @@ async def download_api(dl):
     display_message = None
     complete = False
     start = time.time()
-    while complete is False:
+    while not complete:
         if os.path.isfile(file_path + ".crdownload"):
             try:
                 downloaded = os.stat(file_path + ".crdownload").st_size
@@ -193,12 +189,13 @@ async def download_api(dl):
         percentage = downloaded / file_size * 100
         speed = round(downloaded / diff, 2)
         eta = round((file_size - downloaded) / speed)
-        prog_str = "`{0}` | [{1}{2}] `{3}%`".format(
+        prog_str = "`{}` | [{}{}] `{}%`".format(
             status,
-            "".join(["●" for i in range(math.floor(percentage / 10))]),
-            "".join(["○" for i in range(10 - math.floor(percentage / 10))]),
+            "".join("●" for i in range(math.floor(percentage / 10))),
+            "".join("○" for i in range(10 - math.floor(percentage / 10))),
             round(percentage, 2),
         )
+
         current_message = (
             "`[DOWNLOAD]`\n\n"
             f"`{file_name}`\n"

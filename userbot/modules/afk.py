@@ -172,7 +172,7 @@ async def afk_on_pm(sender):
                     )
                 USERS.update({sender.sender_id: 1})
                 COUNT_MSG = COUNT_MSG + 1
-            elif apprv and sender.sender_id in USERS:
+            elif apprv:
                 if USERS[sender.sender_id] % randint(2, 4) == 0:
                     if AFKREASON:
                         await sender.reply(
@@ -184,11 +184,8 @@ async def afk_on_pm(sender):
                             "**I'm not available right now.** (Since: {afk_str})"
                             "\n**Please come back later.**"
                         )
-                    USERS[sender.sender_id] = USERS[sender.sender_id] + 1
-                    COUNT_MSG = COUNT_MSG + 1
-                else:
-                    USERS[sender.sender_id] = USERS[sender.sender_id] + 1
-                    COUNT_MSG = COUNT_MSG + 1
+                USERS[sender.sender_id] = USERS[sender.sender_id] + 1
+                COUNT_MSG = COUNT_MSG + 1
 
 
 @register(outgoing=True, pattern=r"^\.off(?: |$)(.*)", disable_errors=True)

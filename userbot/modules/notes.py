@@ -23,9 +23,7 @@ async def notes_active(svd):
     for note in notes:
         if message == "`There are no saved notes in this chat`":
             message = "Notes saved in this chat:\n"
-            message += "`#{}`\n".format(note.keyword)
-        else:
-            message += "`#{}`\n".format(note.keyword)
+        message += f"`#{note.keyword}`\n"
     await svd.edit(message)
 
 
@@ -38,9 +36,9 @@ async def remove_notes(clr):
         return await clr.edit("`Running on Non-SQL mode!`")
     notename = clr.pattern_match.group(1)
     if rm_note(clr.chat_id, notename) is False:
-        return await clr.edit("`Couldn't find note:` **{}**".format(notename))
+        return await clr.edit(f"`Couldn't find note:` **{notename}**")
     else:
-        return await clr.edit("`Successfully deleted note:` **{}**".format(notename))
+        return await clr.edit(f"`Successfully deleted note:` **{notename}**")
 
 
 @register(outgoing=True, pattern=r"^\.save (\w*)")
@@ -93,20 +91,21 @@ async def incom_note(getnt):
             message_id_to_reply = getnt.message.reply_to_msg_id
             if not message_id_to_reply:
                 message_id_to_reply = None
-            if note and note.f_mesg_id:
-                msg_o = await getnt.client.get_messages(
-                    entity=BOTLOG_CHATID, ids=int(note.f_mesg_id)
-                )
-                await getnt.client.send_message(
-                    getnt.chat_id,
-                    msg_o.mesage,
-                    reply_to=message_id_to_reply,
-                    file=msg_o.media,
-                )
-            elif note and note.reply:
-                await getnt.client.send_message(
-                    getnt.chat_id, note.reply, reply_to=message_id_to_reply
-                )
+            if note:
+                if note.f_mesg_id:
+                    msg_o = await getnt.client.get_messages(
+                        entity=BOTLOG_CHATID, ids=int(note.f_mesg_id)
+                    )
+                    await getnt.client.send_message(
+                        getnt.chat_id,
+                        msg_o.mesage,
+                        reply_to=message_id_to_reply,
+                        file=msg_o.media,
+                    )
+                elif note.reply:
+                    await getnt.client.send_message(
+                        getnt.chat_id, note.reply, reply_to=message_id_to_reply
+                    )
     except AttributeError:
         pass
 

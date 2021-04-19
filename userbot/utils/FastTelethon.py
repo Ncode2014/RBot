@@ -130,7 +130,7 @@ class ParallelTransferrer:
     client: TelegramClient
     loop: asyncio.AbstractEventLoop
     dc_id: int
-    senders: Optional[List[Union[DownloadSender, UploadSender]]]
+    senders: Optional[list[Union[DownloadSender, UploadSender]]]
     auth_key: AuthKey
     upload_ticker: int
 
@@ -215,7 +215,7 @@ class ParallelTransferrer:
         return sender
 
     async def init_upload(self, file_id: int, file_size: int, part_size_kb: Optional[float] = None,
-                          connection_count: Optional[int] = None) -> Tuple[int, int, bool]:
+                          connection_count: Optional[int] = None) -> tuple[int, int, bool]:
         connection_count = connection_count or self._get_connection_count(
             file_size)
         print("init_upload count is ", connection_count)
@@ -249,9 +249,8 @@ class ParallelTransferrer:
 
         part = 0
         while part < part_count:
-            tasks = []
-            for sender in self.senders:
-                tasks.append(self.loop.create_task(sender.next()))
+            tasks = [self.loop.create_task(sender.next())
+                     for sender in self.senders]
             for task in tasks:
                 data = await task
                 if not data:
@@ -271,7 +270,7 @@ parallel_transfer_locks: DefaultDict[int, asyncio.Lock] = defaultdict(
 async def _internal_transfer_to_telegram(client: TelegramClient,
                                          response: BinaryIO,
                                          progress_callback: callable
-                                         ) -> Tuple[TypeInputFile, int]:
+                                         ) -> tuple[TypeInputFile, int]:
     global filename
     file_id = helpers.generate_random_long()
     file_size = os.path.getsize(response.name)
@@ -336,5 +335,6 @@ async def upload_file(client: TelegramClient,
                       ) -> TypeInputFile:
     global filename
     filename = name
-    res = (await _internal_transfer_to_telegram(client, file, progress_callback))[0]
-    return res
+    return (
+        await _internal_transfer_to_telegram(client, file, progress_callback)
+    )[0]

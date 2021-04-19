@@ -5,13 +5,13 @@
 #
 """ Userbot module containing various scrapers. """
 
-import asyncio
 import json
 import os
 import re
 import shutil
 import time
-from asyncio import sleep
+from asyncio import get_event_loop, sleep
+from glob import glob
 from re import findall
 from urllib.error import HTTPError
 from urllib.parse import quote_plus
@@ -25,7 +25,6 @@ from hachoir.metadata import extractMetadata
 from hachoir.parser import createParser
 from requests import get
 from search_engine_parser.core.engines.google import Search as GoogleSearch
-from telethon.tl.types import DocumentAttributeAudio, DocumentAttributeVideo
 from urbandict import define
 from wikipedia import summary
 from wikipedia.exceptions import DisambiguationError, PageError
@@ -44,9 +43,7 @@ from youtube_search import YoutubeSearch
 
 from userbot import BOTLOG, BOTLOG_CHATID, CMD_HELP, TEMP_DOWNLOAD_DIRECTORY
 from userbot.events import register
-from userbot.modules.upload_download import get_video_thumb
-from userbot.utils import chrome, googleimagesdownload, progress
-from userbot.utils.FastTelethon import upload_file
+from userbot.utils import chrome, googleimagesdownload
 
 CARBONLANG = "auto"
 
@@ -253,9 +250,8 @@ async def wiki(wiki_q):
         return await wiki_q.edit(f"Page not found.\n\n{pageerror}")
     result = summary(match)
     if len(result) >= 4096:
-        file = open("output.txt", "w+")
-        file.write(result)
-        file.close()
+        with open("output.txt", "w+") as file:
+            file.write(result)
         await wiki_q.client.send_file(
             wiki_q.chat_id,
             "output.txt",
@@ -287,17 +283,16 @@ async def urban_dict(ud_e):
     if int(meanlen) >= 0:
         if int(meanlen) >= 4096:
             await ud_e.edit("`Output too large, sending as file.`")
-            file = open("output.txt", "w+")
-            file.write(
-                "Text: "
-                + query
-                + "\n\nMeaning: "
-                + mean[0]["def"]
-                + "\n\n"
-                + "Example: \n"
-                + mean[0]["example"]
-            )
-            file.close()
+            with open("output.txt", "w+") as file:
+                file.write(
+                    "Text: "
+                    + query
+                    + "\n\nMeaning: "
+                    + mean[0]["def"]
+                    + "\n\n"
+                    + "Example: \n"
+                    + mean[0]["example"]
+                )
             await ud_e.client.send_file(
                 ud_e.chat_id,
                 "output.txt",
@@ -367,7 +362,7 @@ async def text_to_speech(query):
     if linecount == 1:
         tts = gTTS(message, lang=target_lang)
         tts.save("k.mp3")
-    with open("k.mp3", "r"):
+    with open("k.mp3"):
         await query.client.send_file(query.chat_id, "k.mp3", voice_note=True)
         os.remove("k.mp3")
         if BOTLOG:
@@ -403,24 +398,18 @@ async def imdb(e):
         else:
             mov_details = ""
         credits = soup.findAll("div", "credit_summary_item")
+        director = credits[0].a.text
         if len(credits) == 1:
-            director = credits[0].a.text
             writer = "Not available"
             stars = "Not available"
         elif len(credits) > 2:
-            director = credits[0].a.text
             writer = credits[1].a.text
-            actors = []
-            for x in credits[2].findAll("a"):
-                actors.append(x.text)
+            actors = [x.text for x in credits[2].findAll("a")]
             actors.pop()
             stars = actors[0] + "," + actors[1] + "," + actors[2]
         else:
-            director = credits[0].a.text
             writer = "Not available"
-            actors = []
-            for x in credits[1].findAll("a"):
-                actors.append(x.text)
+            actors = [x.text for x in credits[1].findAll("a")]
             actors.pop()
             stars = actors[0] + "," + actors[1] + "," + actors[2]
         if soup.find("div", "inline canwrap"):
@@ -599,15 +588,20 @@ async def yt_search(event):
     await event.edit(output, link_preview=False)
 
 
-@register(outgoing=True, pattern=r".rip(audio|video) (.*)")
+@register(outgoing=True, pattern=r".rip(audio|video( \d{0,4})?) (.*)")
 async def download_video(v_url):
     """ For .rip command, download media from YouTube and many other sites. """
-    url = v_url.pattern_match.group(2)
-    type = v_url.pattern_match.group(1).lower()
+    dl_type = v_url.pattern_match.group(1).lower()
+    reso = v_url.pattern_match.group(2)
+    reso = reso.strip() if reso else None
+    url = v_url.pattern_match.group(3)
 
     await v_url.edit("`Preparing to download...`")
+    s_time = time.time()
+    video = False
+    audio = False
 
-    if type == "audio":
+    if "audio" in dl_type:
         opts = {
             "format": "bestaudio",
             "addmetadata": True,
@@ -615,6 +609,9 @@ async def download_video(v_url):
             "writethumbnail": True,
             "prefer_ffmpeg": True,
             "geo_bypass": True,
+            "user-agent": "Mozilla/5.0 (X11; CrOS x86_64 13597.94.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.186 Safari/537.36",
+            "force-ipv4": True,
+            "proxy": "",
             "nocheckcertificate": True,
             "postprocessors": [
                 {
@@ -623,31 +620,34 @@ async def download_video(v_url):
                     "preferredquality": "320",
                 }
             ],
-            "outtmpl": "%(id)s.mp3",
+            "outtmpl": "%(id)s.%(ext)s",
             "quiet": True,
             "logtostderr": False,
-            "external_downloader": "aria2c",
         }
-        video = False
-        song = True
+        audio = True
 
-    elif type == "video":
+    elif "video" in dl_type:
+        quality = (
+            f"bestvideo[height<={reso}]+bestaudio/best[height<={reso}]"
+            if reso
+            else "bestvideo+bestaudio/best"
+        )
         opts = {
-            "format": "best",
+            "format": quality,
             "addmetadata": True,
             "key": "FFmpegMetadata",
             "prefer_ffmpeg": True,
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36",
+            "force-ipv4": True,
+            "proxy": "",
             "geo_bypass": True,
             "nocheckcertificate": True,
-            "postprocessors": [
-                {"key": "FFmpegVideoConvertor", "preferedformat": "mp4"}
-            ],
-            "outtmpl": "%(id)s.mp4",
+            "outtmpl": os.path.join(
+                TEMP_DOWNLOAD_DIRECTORY, str(s_time), "%(title)s.%(ext)s"
+            ),
             "logtostderr": False,
             "quiet": True,
-            "external_downloader": "aria2c",
         }
-        song = False
         video = True
 
     try:
@@ -676,7 +676,7 @@ async def download_video(v_url):
     except Exception as e:
         return await v_url.edit(f"{str(type(e)): {str(e)}}")
     c_time = time.time()
-    if song:
+    if audio:
         await v_url.edit(
             f"`Preparing to upload song:`\n**{rip_data.get('title')}**"
             f"\nby **{rip_data.get('uploader')}**"
@@ -687,7 +687,7 @@ async def download_video(v_url):
                 client=v_url.client,
                 file=f,
                 name=f_name,
-                progress_callback=lambda d, t: asyncio.get_event_loop().create_task(
+                progress_callback=lambda d, t: get_event_loop().create_task(
                     progress(
                         d, t, v_url, c_time, "Uploading..", f"{rip_data['title']}.mp3"
                     )
@@ -725,20 +725,24 @@ async def download_video(v_url):
             f"`Preparing to upload video:`\n**{rip_data.get('title')}**"
             f"\nby **{rip_data.get('uploader')}**"
         )
-        f_name = rip_data.get("id") + ".mp4"
-        with open(f_name, "rb") as f:
+        f_path = glob(os.path.join(TEMP_DOWNLOAD_DIRECTORY, str(s_time), "*"))[0]
+        # Noob way to convert from .mkv to .mp4
+        if f_path.endswith(".mkv"):
+            base = os.path.splitext(f_path)[0]
+            os.rename(f_path, base + ".mp4")
+            f_path = glob(os.path.join(TEMP_DOWNLOAD_DIRECTORY, str(s_time), "*"))[0]
+        f_name = os.path.basename(f_path)
+        with open(f_path, "rb") as f:
             result = await upload_file(
                 client=v_url.client,
                 file=f,
                 name=f_name,
-                progress_callback=lambda d, t: asyncio.get_event_loop().create_task(
-                    progress(
-                        d, t, v_url, c_time, "Uploading..", f"{rip_data['title']}.mp4"
-                    )
+                progress_callback=lambda d, t: get_event_loop().create_task(
+                    progress(d, t, v_url, c_time, "Uploading..", f_name)
                 ),
             )
-        thumb_image = await get_video_thumb(f_name, "thumb.png")
-        metadata = extractMetadata(createParser(f_name))
+        thumb_image = await get_video_thumb(f_path, "thumb.png")
+        metadata = extractMetadata(createParser(f_path))
         duration = 0
         width = 0
         height = 0
@@ -760,9 +764,9 @@ async def download_video(v_url):
                     supports_streaming=True,
                 )
             ],
-            caption=rip_data["title"],
+            caption=f"[{rip_data.get('title')}]({url})",
         )
-        os.remove(f_name)
+        shutil.rmtree(os.path.join(TEMP_DOWNLOAD_DIRECTORY, str(s_time)))
         os.remove(thumb_image)
         await v_url.delete()
 
@@ -794,10 +798,13 @@ CMD_HELP.update(
         "\nUsage: Does a YouTube search."
         "\nCan specify the number of results needed (default is 3).",
         "imdb": ">`.imdb <movie-name>`" "\nUsage: Shows movie info and other stuff.",
-        "rip": ">`.ripaudio <url> or ripvideo <url>`"
-        "\nUsage: Download videos and songs from YouTube "
-        "(and [many other sites](https://ytdl-org.github.io/youtube-dl/supportedsites.html)).",
         "reddit": ">`.reddit <subreddit>`"
         "\nUsage: To see You Subreddit And Top Comment.",
+        "rip": ">`.ripaudio <url>`"
+        "\nUsage: Download videos from YouTube and convert to audio "
+        "\n\n>`.ripvideo <quality> <url>` (quality is optional)"
+        "\nQuality examples : `144` `240` `360` `480` `720` `1080` `2160`"
+        "\nUsage: Download videos from YouTube"
+        "\n\n[Other supported sites](https://ytdl-org.github.io/youtube-dl/supportedsites.html)",
     }
 )

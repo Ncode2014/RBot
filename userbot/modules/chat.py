@@ -44,7 +44,7 @@ async def useridgetter(target):
                 name = "@" + message.forward.sender.username
             else:
                 name = "*" + message.forward.sender.first_name + "*"
-        await target.edit("**Name:** {} \n**User ID:** `{}`".format(name, user_id))
+        await target.edit(f"**Name:** {name} \n**User ID:** `{user_id}`")
 
 
 @register(outgoing=True, pattern=r"^\.link(?: |$)(.*)")
@@ -238,8 +238,8 @@ async def fetch_info(chat, event):
         if hasattr(chat_obj_info, "verified") and chat_obj_info.verified
         else "No"
     )
-    username = "@{}".format(username) if username else None
-    creator_username = "@{}".format(creator_username) if creator_username else None
+    username = f"@{username}" if username else None
+    creator_username = f"@{creator_username}" if creator_username else None
     # end of spaghetti block
 
     if admins is None:
@@ -317,7 +317,6 @@ async def fetch_info(chat, event):
             caption += f", <code>{slowmode_time}s</code>\n\n"
         else:
             caption += "\n\n"
-    if not broadcast:
         caption += f"Supergroup: {supergroup}\n\n"
     if hasattr(chat_obj_info, "restricted"):
         caption += f"Restricted: {restricted}\n"
@@ -377,8 +376,6 @@ async def _(event):
                     await event.edit(str(e))
                     return
             await event.edit("`Invited Unsuccessfully`")
-            await sleep(3)
-            await event.delete()
         else:
             # https://lonamiwebs.github.io/Telethon/methods/channels/invite_to_channel.html
             for user_id in to_add_users.split(" "):
@@ -392,8 +389,9 @@ async def _(event):
                     await event.edit(str(e))
                     return
             await event.edit("`Invited Successfully`")
-            await sleep(3)
-            await event.delete()
+
+        await sleep(3)
+        await event.delete()
 
 
 @register(outgoing=True, pattern=r"^\.kickme$")

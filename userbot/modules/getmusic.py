@@ -8,7 +8,7 @@ import shutil
 import subprocess
 import time
 
-import deezloader
+import pydeezloader
 from hachoir.metadata import extractMetadata
 from hachoir.parser import createParser
 from pylast import User
@@ -112,7 +112,7 @@ async def _(event):
         await event.edit("`What I am Supposed to find?`")
         return
     await getmusicvideo(query)
-    l = glob.glob(("*.mp4")) + glob.glob(("*.mkv")) + glob.glob(("*.webm"))
+    l = glob.glob("*.mp4") + glob.glob("*.mkv") + glob.glob("*.webm")
     if l:
         await event.edit("`Yeah..! i found something..`")
     else:
@@ -253,7 +253,7 @@ async def _(event):
         return
 
     strings = {
-        "name": "DeezLoad",
+        "name": "PyDeezLoader",
         "arl_token_cfg_doc": "ARL Token for Deezer",
         "invalid_arl_token": "please set the required variables for this module",
         "wrong_cmd_syntax": "bruh, now i think how far should we go. please terminate my Session.",
@@ -269,7 +269,7 @@ async def _(event):
         return
 
     try:
-        loader = deezloader.Login(ARL_TOKEN)
+        download = pydeezloader.Login(ARL_TOKEN)
     except Exception as er:
         await event.edit(str(er))
         return
@@ -285,7 +285,7 @@ async def _(event):
 
     if "spotify" in required_link:
         if "track" in required_link:
-            required_track = loader.download_trackspo(
+            required_track = download.download_trackspo(
                 required_link,
                 output=temp_dl_path,
                 quality=required_qty,
@@ -299,7 +299,7 @@ async def _(event):
             await event.delete()
 
         elif "album" in required_link:
-            reqd_albums = loader.download_albumspo(
+            reqd_albums = download.download_albumspo(
                 required_link,
                 output=temp_dl_path,
                 quality=required_qty,
@@ -316,7 +316,7 @@ async def _(event):
 
     elif "deezer" in required_link:
         if "track" in required_link:
-            required_track = loader.download_trackdee(
+            required_track = download.download_trackdee(
                 required_link,
                 output=temp_dl_path,
                 quality=required_qty,
@@ -330,7 +330,7 @@ async def _(event):
             await event.delete()
 
         elif "album" in required_link:
-            reqd_albums = loader.download_albumdee(
+            reqd_albums = download.download_albumdee(
                 required_link,
                 output=temp_dl_path,
                 quality=required_qty,

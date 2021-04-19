@@ -32,9 +32,9 @@ async def telegraphs(graph):
                 end = datetime.now()
                 ms = (end - start).seconds
                 await graph.edit(
-                    "Downloaded to {} in {} seconds.".format(downloaded_file_name, ms)
+                    f"Downloaded to {downloaded_file_name} in {ms} seconds."
                 )
-                if downloaded_file_name.endswith((".webp")):
+                if downloaded_file_name.endswith(".webp"):
                     resize_image(downloaded_file_name)
                 try:
                     start = datetime.now()

@@ -34,7 +34,7 @@ trackers = f"[{trackers_list}]"
 cmd = f"aria2c \
 --enable-rpc \
 --rpc-listen-all=false \
---rpc-listen-port 6800 \
+--rpc-listen-port 9800 \
 --max-connection-per-server=13 \
 --rpc-max-request-size=1024M \
 --seed-time=0.01 \
@@ -52,7 +52,7 @@ if not os.path.isdir(TEMP_DOWNLOAD_DIRECTORY):
     os.makedirs(TEMP_DOWNLOAD_DIRECTORY)
 download_path = os.getcwd() + TEMP_DOWNLOAD_DIRECTORY.strip(".")
 
-aria2 = aria2p.API(aria2p.Client(host="http://localhost", port=6800, secret=""))
+aria2 = aria2p.API(aria2p.Client(host="http://localhost", port=9800, secret=""))
 
 aria2.set_global_options({"dir": download_path})
 
@@ -94,7 +94,7 @@ async def aurl_download(event):
         download = aria2.add_uris(uri, options=None, position=None)
     except Exception as e:
         LOGS.info(str(e))
-        return await event.edit("Error :\n`{}`".format(str(e)))
+        return await event.edit(f"Error :\n`{str(e)}`")
     gid = download.gid
     await check_progress_for_dl(gid=gid, event=event, previous=None)
     file = aria2.get_download(gid)
@@ -140,7 +140,6 @@ async def resume_all(event):
 
 @register(outgoing=True, pattern=r"^\.ashow(?: |$)(.*)")
 async def show_all(event):
-    output = "output.txt"
     downloads = aria2.get_downloads()
     msg = ""
     for download in downloads:
@@ -166,6 +165,7 @@ async def show_all(event):
         await event.delete()
     else:
         await event.edit("`Output is too big, sending it as a file...`")
+        output = "output.txt"
         with open(output, "w") as f:
             f.write(msg)
         await sleep(2)
@@ -196,11 +196,12 @@ async def check_progress_for_dl(gid, event, previous):
             if not complete and not file.error_message:
                 percentage = int(file.progress)
                 downloaded = percentage * int(file.total_length) / 100
-                prog_str = "`Downloading` | [{0}{1}] `{2}`".format(
-                    "".join(["●" for i in range(math.floor(percentage / 10))]),
-                    "".join(["○" for i in range(10 - math.floor(percentage / 10))]),
+                prog_str = "`Downloading` | [{}{}] `{}`".format(
+                    "".join("●" for i in range(math.floor(percentage / 10))),
+                    "".join("○" for i in range(10 - math.floor(percentage / 10))),
                     file.progress_string(),
                 )
+
                 msg = (
                     f"`Name`: `{file.name}`\n"
                     f"`Status` -> **{file.status.capitalize()}**\n"
@@ -227,7 +228,7 @@ async def check_progress_for_dl(gid, event, previous):
                 )
         except Exception as e:
             if " not found" in str(e) or "'file'" in str(e):
-                await event.edit("Download Canceled :\n`{}`".format(file.name))
+                await event.edit(f"Download Canceled :\n`{file.name}`")
                 await sleep(2.5)
                 return await event.delete()
             elif " depth exceeded" in str(e):

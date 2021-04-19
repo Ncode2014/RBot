@@ -45,10 +45,9 @@ async def download(target_file):
             # https://stackoverflow.com/a/761825/4723940
             file_name = file_name.strip()
             head, tail = os.path.split(file_name)
-            if head:
-                if not os.path.isdir(os.path.join(TEMP_DOWNLOAD_DIRECTORY, head)):
-                    os.makedirs(os.path.join(TEMP_DOWNLOAD_DIRECTORY, head))
-                    file_name = os.path.join(head, tail)
+            if head and not os.path.isdir(os.path.join(TEMP_DOWNLOAD_DIRECTORY, head)):
+                os.makedirs(os.path.join(TEMP_DOWNLOAD_DIRECTORY, head))
+                file_name = os.path.join(head, tail)
         downloaded_file_name = TEMP_DOWNLOAD_DIRECTORY + "" + file_name
         downloader = SmartDL(url, downloaded_file_name, progress_bar=False)
         downloader.start(blocking=False)
@@ -56,17 +55,18 @@ async def download(target_file):
         display_message = None
         while not downloader.isFinished():
             status = downloader.get_status().capitalize()
-            total_length = downloader.filesize if downloader.filesize else None
+            total_length = downloader.filesize or None
             downloaded = downloader.get_dl_size()
             now = time.time()
             diff = now - c_time
             percentage = downloader.get_progress() * 100
             speed = downloader.get_speed()
-            progress_str = "[{0}{1}] `{2}%`".format(
-                "".join(["●" for i in range(math.floor(percentage / 10))]),
-                "".join(["○" for i in range(10 - math.floor(percentage / 10))]),
+            progress_str = "[{}{}] `{}%`".format(
+                "".join("●" for i in range(math.floor(percentage / 10))),
+                "".join("○" for i in range(10 - math.floor(percentage / 10))),
                 round(percentage, 2),
             )
+
             estimated_total_time = downloader.get_eta(human=True)
             try:
                 current_message = (
@@ -85,10 +85,10 @@ async def download(target_file):
                 LOGS.info(str(e))
         if downloader.isSuccessful():
             await target_file.edit(
-                "Downloaded to `{}` successfully !!".format(downloaded_file_name)
+                f"Downloaded to `{downloaded_file_name}` successfully !!"
             )
         else:
-            await target_file.edit("Incorrect URL\n{}".format(url))
+            await target_file.edit(f"Incorrect URL\n{url}")
     elif replied:
         if not replied.media:
             return await target_file.edit("`Reply to file or media `")
@@ -130,11 +130,11 @@ async def download(target_file):
         else:
             try:
                 await target_file.edit(
-                    "Downloaded to `{}` in `{}` seconds.".format(result.name, dl_time)
+                    f"Downloaded to `{result.name}` in `{dl_time}` seconds."
                 )
             except AttributeError:
                 await target_file.edit(
-                    "Downloaded to `{}` in `{}` seconds.".format(result, dl_time)
+                    f"Downloaded to `{result}` in `{dl_time}` seconds."
                 )
     else:
         await target_file.edit("See `.help download` for more info.")
@@ -146,10 +146,9 @@ async def get_video_thumb(file, output):
     t_resp, e_resp = await run_cmd(command)
     if os.path.lexists(output):
         return output
-    else:
-        LOGS.info(t_resp)
-        LOGS.info(e_resp)
-        return None
+    LOGS.info(t_resp)
+    LOGS.info(e_resp)
+    return None
 
 
 @register(pattern=r"^\.up (.*)", outgoing=True)
@@ -233,7 +232,7 @@ async def upload(event):
             for root, dirs, files in os.walk(input_str):
                 for file in files:
                     lst_files.append(os.path.join(root, file))
-            if len(lst_files) == 0:
+            if not lst_files:
                 return await event.edit(f"`{input_str}` is empty.")
             await event.edit(f"Found `{len(lst_files)}` files. Now uploading...")
             for files in os_sorted(lst_files):

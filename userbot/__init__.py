@@ -169,7 +169,7 @@ if not os.path.exists('bin'):
 binaries = {
     "https://raw.githubusercontent.com/adekmaulana/megadown/master/megadown":
     "bin/megadown",
-    "https://raw.githubusercontent.com/yshalsager/cmrudl.py/master/cmrudl.py":
+    "https://raw.githubusercontent.com/KenHV/KensurBot/master/bin/cmrudl.py":
     "bin/cmrudl"
 }
 
