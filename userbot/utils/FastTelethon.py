@@ -8,7 +8,7 @@ import inspect
 import logging
 import os
 from collections import defaultdict
-from typing import Optional, List, AsyncGenerator, Union, Awaitable, DefaultDict, Tuple, BinaryIO
+from typing import AsyncGenerator, Awaitable, BinaryIO, DefaultDict, Optional, Union
 
 import math
 from telethon import utils, helpers, TelegramClient

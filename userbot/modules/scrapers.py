@@ -24,7 +24,8 @@ from gtts.lang import tts_langs
 from hachoir.metadata import extractMetadata
 from hachoir.parser import createParser
 from requests import get
-from search_engine_parser.core.engines.google import Search as GoogleSearch
+from search_engine_parser import GoogleSearch
+from telethon.tl.types import DocumentAttributeAudio, DocumentAttributeVideo
 from urbandict import define
 from wikipedia import summary
 from wikipedia.exceptions import DisambiguationError, PageError
@@ -43,7 +44,9 @@ from youtube_search import YoutubeSearch
 
 from userbot import BOTLOG, BOTLOG_CHATID, CMD_HELP, TEMP_DOWNLOAD_DIRECTORY
 from userbot.events import register
-from userbot.utils import chrome, googleimagesdownload
+from userbot.modules.upload_download import get_video_thumb
+from userbot.utils import chrome, googleimagesdownload, progress
+from userbot.utils.FastTelethon import upload_file
 
 CARBONLANG = "auto"
 
@@ -53,53 +56,6 @@ async def setlang(prog):
     global CARBONLANG
     CARBONLANG = prog.pattern_match.group(1)
     await prog.edit(f"Language for carbon.now.sh set to {CARBONLANG}")
-
-
-# kang from doge-userbot
-
-
-@register(outgoing=True, pattern=r"^\.reddit (.*)")
-async def reddit(event):
-    sub = event.pattern_match.group(1)
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36 Avast/77.2.2153.120",
-    }
-
-    if len(sub) < 1:
-        await event.edit(
-            "`Please specify a Subreddit. Example: ``.reddit kopyamakarna`"
-        )
-        return
-
-    source = get(
-        f"https://www.reddit.com/r/{sub}/hot.json?limit=1", headers=headers
-    ).json()
-
-    if "kind" not in source:
-        if source["error"] == 404:
-            await event.edit("`No such Subreddit found.`")
-        elif source["error"] == 429:
-            await event.edit("`Reddit warns you to slow down.`")
-        else:
-            await event.edit(
-                "`Something happened but ... I don't know why it happened.`"
-            )
-        return
-    else:
-        await event.edit("`Data fetching...`")
-
-        data = source["data"]["children"][0]["data"]
-        message = f"**{data['title']}**\n⬆️{data['score']}\n\nBy: __u/{data['author']}__\n\n[Link](https://reddit.com{data['permalink']})"
-        try:
-            image = data["url"]
-            with open(f"reddit.jpg", "wb") as load:
-                load.write(get(image).content)
-
-            await event.client.send_file(event.chat_id, "reddit.jpg", caption=message)
-            os.remove("reddit.jpg")
-        except Exception as e:
-            print(e)
-            await event.edit(message + "\n\n`" + data["selftext"] + "`")
 
 
 @register(outgoing=True, pattern=r"^\.carbon")
@@ -179,26 +135,29 @@ async def img_sampler(event):
     await event.delete()
 
 
-@register(outgoing=True, pattern=r"^\.currency ([\d\.]+) ([a-zA-Z]+) ([a-zA-Z]+)")
+@register(outgoing=True, pattern=r"^\.currency (.*)")
 async def moni(event):
-    c_from_val = float(event.pattern_match.group(1))
-    c_from = (event.pattern_match.group(2)).upper()
-    c_to = (event.pattern_match.group(3)).upper()
-    try:
-        response = get(
-            "https://api.ratesapi.io/api/latest",
-            params={"base": c_from, "symbols": c_to},
-        ).json()
-    except Exception:
-        await event.edit("**Error: API is down.**")
-        return
-    if "error" in response:
-        await event.edit(
-            "**This seems to be some alien currency, which I can't convert right now.**"
-        )
-        return
-    c_to_val = round(c_from_val * response["rates"][c_to], 2)
-    await event.edit(f"**{c_from_val} {c_from} = {c_to_val} {c_to}**")
+    input_str = event.pattern_match.group(1)
+    input_sgra = input_str.split(" ")
+    if len(input_sgra) == 3:
+        try:
+            number = float(input_sgra[0])
+            currency_from = input_sgra[1].upper()
+            currency_to = input_sgra[2].upper()
+            request_url = f"https://api.ratesapi.io/api/latest?base={currency_from}"
+            current_response = get(request_url).json()
+            if currency_to in current_response["rates"]:
+                current_rate = float(current_response["rates"][currency_to])
+                rebmun = round(number * current_rate, 2)
+                await event.edit(f"{number} {currency_from} = {rebmun} {currency_to}")
+            else:
+                await event.edit(
+                    "`This seems to be some alien currency, which I can't convert right now.`"
+                )
+        except Exception as e:
+            await event.edit(str(e))
+    else:
+        return await event.edit("`Invalid syntax.`")
 
 
 @register(outgoing=True, pattern=r"^\.google (.*)")
@@ -609,9 +568,6 @@ async def download_video(v_url):
             "writethumbnail": True,
             "prefer_ffmpeg": True,
             "geo_bypass": True,
-            "user-agent": "Mozilla/5.0 (X11; CrOS x86_64 13597.94.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.186 Safari/537.36",
-            "force-ipv4": True,
-            "proxy": "",
             "nocheckcertificate": True,
             "postprocessors": [
                 {
@@ -637,9 +593,6 @@ async def download_video(v_url):
             "addmetadata": True,
             "key": "FFmpegMetadata",
             "prefer_ffmpeg": True,
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36",
-            "force-ipv4": True,
-            "proxy": "",
             "geo_bypass": True,
             "nocheckcertificate": True,
             "outtmpl": os.path.join(
@@ -798,8 +751,6 @@ CMD_HELP.update(
         "\nUsage: Does a YouTube search."
         "\nCan specify the number of results needed (default is 3).",
         "imdb": ">`.imdb <movie-name>`" "\nUsage: Shows movie info and other stuff.",
-        "reddit": ">`.reddit <subreddit>`"
-        "\nUsage: To see You Subreddit And Top Comment.",
         "rip": ">`.ripaudio <url>`"
         "\nUsage: Download videos from YouTube and convert to audio "
         "\n\n>`.ripvideo <quality> <url>` (quality is optional)"

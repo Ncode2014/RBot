@@ -33,7 +33,7 @@ def gmute(sender):
 
 
 def ungmute(sender):
-    rem = SESSION.query(GMute).get((str(sender)))
+    rem = SESSION.query(GMute).get(str(sender))
     if rem:
         SESSION.delete(rem)
         SESSION.commit()
