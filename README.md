@@ -23,11 +23,12 @@
 A modular Telegram Userbot running on Python3 with sqlalchemy database. 
 
 based on [ProjectBish](https://github.com/adekmaulana/ProjectBish) Userbot
+Forked From [WeebProject](https://github.com/BianSepang/WeebProject)
  
 ## Deploy
 ### Heroku
 Click this button below to Deploy to Heroku
-<p align="center"><a href="https://heroku.com/deploy?template=https://github.com/BianSepang/WeebProject/tree/master"> <img src="https://www.herokucdn.com/deploy/button.png" alt="Deploy to Heroku"/></a></p>
+<p align="center"><a href="https://heroku.com/deploy?template=https://github.com/Ncode2014/nikabut/tree/master"> <img src="https://www.herokucdn.com/deploy/button.png" alt="Deploy to Heroku"/></a></p>
 
 ### "Bare hands", using Git and Python3 -- on (Linux, macOS, and Android [via Termux])
 1. Clone this repository on your local machine and `cd` (or `chdir`, anti bloat guy) to it
@@ -50,8 +51,9 @@ Click this button below to Deploy to Heroku
 * [Aidil Aryanto](https://github.com/aidilaryanto) - ProjectDils
 * [Alfianandaa](https://github.com/alfianandaa) - ProjectAlf
 * [GengKapak](https://github.com/GengKapak) - DCLXVI
+* [BianSepang](https://github.com/BianSepang/WeebProject) - WeebProject
 
-and [everyone](https://github.com/BianSepang/WeebProject/graphs/contributors) that makes this userbot awesome :D
+and [everyone](https://github.com/Ncode2014/nikabut/graphs/contributors) that makes this userbot awesome :D
 
 ## License
-Licensed under [Raphielscape Public License](https://github.com/BianSepang/WeebProject/blob/master/LICENSE) - Version 1.d, February 2020
+Licensed under [Raphielscape Public License](https://github.com/Ncode2014/nikabut/blob/master/LICENSE) - Version 1.d, February 2020

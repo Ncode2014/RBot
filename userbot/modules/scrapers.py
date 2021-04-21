@@ -547,6 +547,50 @@ async def yt_search(event):
     await event.edit(output, link_preview=False)
 
 
+@register(outgoing=True, pattern=r"^\.reddit (.*)")
+async def reddit(event):
+    sub = event.pattern_match.group(1)
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36 Avast/77.2.2153.120",
+    }
+
+    if len(sub) < 1:
+        await event.edit(
+            "`Please specify a Subreddit. Example: ``.reddit kopyamakarna`"
+        )
+        return
+
+    source = get(
+        f"https://www.reddit.com/r/{sub}/hot.json?limit=1", headers=headers
+    ).json()
+
+    if "kind" not in source:
+        if source["error"] == 404:
+            await event.edit("`No such Subreddit found.`")
+        elif source["error"] == 429:
+            await event.edit("`Reddit warns you to slow down.`")
+        else:
+            await event.edit(
+                "`Something happened but ... I don't know why it happened.`"
+            )
+        return
+    else:
+        await event.edit("`Data fetching...`")
+
+        data = source["data"]["children"][0]["data"]
+        message = f"**{data['title']}**\n⬆️{data['score']}\n\nBy: __u/{data['author']}__\n\n[Link](https://reddit.com{data['permalink']})"
+        try:
+            image = data["url"]
+            with open(f"reddit.jpg", "wb") as load:
+                load.write(get(image).content)
+
+            await event.client.send_file(event.chat_id, "reddit.jpg", caption=message)
+            os.remove("reddit.jpg")
+        except Exception as e:
+            print(e)
+            await event.edit(message + "\n\n`" + data["selftext"] + "`")
+
+
 @register(outgoing=True, pattern=r".rip(audio|video( \d{0,4})?) (.*)")
 async def download_video(v_url):
     """ For .rip command, download media from YouTube and many other sites. """
@@ -568,6 +612,7 @@ async def download_video(v_url):
             "writethumbnail": True,
             "prefer_ffmpeg": True,
             "geo_bypass": True,
+            "user-agent": "Mozilla/5.0 (X11; CrOS x86_64 13597.94.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.186 Safari/537.36",
             "nocheckcertificate": True,
             "postprocessors": [
                 {
@@ -593,6 +638,7 @@ async def download_video(v_url):
             "addmetadata": True,
             "key": "FFmpegMetadata",
             "prefer_ffmpeg": True,
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36",
             "geo_bypass": True,
             "nocheckcertificate": True,
             "outtmpl": os.path.join(
