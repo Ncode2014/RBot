@@ -135,7 +135,7 @@ async def img_sampler(event):
     await event.delete()
 
 
-@register(outgoing=True, pattern=r"^\.currency (.*)")
+@register(outgoing=True, pattern=r"^\.currency ([\d\.]+) ([a-zA-Z]+) ([a-zA-Z]+)")
 async def moni(event):
     input_str = event.pattern_match.group(1)
     input_sgra = input_str.split(" ")
