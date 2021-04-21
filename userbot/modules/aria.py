@@ -45,14 +45,14 @@ cmd = f"aria2c \
 --enable-rpc \
 --follow-torrent=mem \
 --max-concurrent-downloads=7 \
- --max-connection-per-server =13 \
-- -max-upload-limit=1K \
-- -min-split-size=10M \
-- -rpc-listen-all=false \
-- -rpc-listen-port 9800 \
-- -rpc-max-request-size=1024M \
-- -seed-time=0.01 \
-- -split=10"
+--max-connection-per-server=13 \
+--max-upload-limit=1K \
+--min-split-size=10M \
+--rpc-listen-all=false \
+--rpc-listen-port 9800 \
+--rpc-max-request-size=1024M \
+--seed-time=0.01 \
+--split=10"
 
 
 subprocess_run(cmd)
