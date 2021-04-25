@@ -38,7 +38,7 @@ lottie
 lxml
 lyricsgenius
 natsort
-nekos.py
+
 numpy
 oauth2client
 pendulum
