@@ -134,7 +134,7 @@ CMD_HELP.update(
         "\nUsage: to check your bin information."
         "\n\n> `.skey` **<SK-Key Number>**"
         "\nUsage: to check your bin information."
-        "\n\n> `.alc` **<SK-Key Number>**"
+        "\n\n> `.alc` **<CC|D|Y|Number>**"
         "\nUsage: to check Your bin is dead or Alive."
     }
 )
