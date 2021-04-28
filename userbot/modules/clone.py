@@ -17,7 +17,7 @@ USER_DATA = {}
 
 @register(pattern=r"^\.clone(?: |$)(.*)", outgoing=True)
 async def clone(cloner):
-    """ Clone first name, last name, bio and profile picture """
+    """Clone first name, last name, bio and profile picture"""
     reply_message = cloner.reply_to_msg_id
     message = await cloner.get_reply_message()
     input_ = message.sender.id if reply_message else cloner.pattern_match.group(1)
@@ -74,7 +74,7 @@ async def clone(cloner):
 
 @register(pattern=r"^\.revert(?: |$)(.*)", outgoing=True)
 async def revert_(reverter):
-    """ Returns Original Profile """
+    """Returns Original Profile"""
     if not (USER_DATA or os.path.exists(PHOTO)):
         await reverter.edit("`Already reverted!`")
         await asyncio.sleep(2)
