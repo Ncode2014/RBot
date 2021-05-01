@@ -6,10 +6,26 @@
 
 import asyncio
 
+from faker import Faker
 from telethon.errors.rpcerrorlist import YouBlockedUserError
 
 from userbot import CMD_HELP, bot
 from userbot.events import register
+
+
+@register(outgoing=True, pattern=r"^\.genadd(?: |$)(.*)")
+async def _(event):
+    if event.fwd_from:
+        return
+    cc = Faker()
+    name = cc.name()
+    adre = cc.address()
+    zipcd = cc.zipcode
+
+    await edit_or_reply(
+        event,
+        f"__**👤 NAME :- **__\n`{name}`\n\n__**🏡 ADDRESS :- **__\n`{adre}`\n\n__**🏘️  ZIPCODE :- **__\n`{zipcd}`",
+    )
 
 
 @register(outgoing=True, pattern=r"^\.gen(?: |$)(.*)")
@@ -54,6 +70,41 @@ async def _(event):
             return await event.edit(f"Failed Check {query}!")
         await event.edit(get.message)
         await event.client.delete_messages(conv.chat_id, [send.id, get.id])
+
+
+@register(outgoing=True, pattern="^\\.fakemail(?: |$)(.*)")
+async def _(event):
+    if event.fwd_from:
+        return
+    if not event.reply_to_msg_id:
+        await event.edit("```Reply to any user message.```")
+        return
+    reply_message = await event.get_reply_message()
+    if not reply_message.text:
+        await fake.edit("```reply to text message```")
+        return
+    chat = "@fakemailbot"
+    reply_message.sender
+    if reply_message.sender.bot:
+        await event.edit("```Reply to actual users message.```")
+        return
+    await event.edit("```Sit tight while I sending some data from Microsoft```")
+    async with bot.conversation(chat) as conv:
+        try:
+            response = conv.wait_event(
+                events.NewMessage(incoming=True, from_users=177914997)
+            )
+            await bot.forward_messages(chat, reply_message)
+            response = await response
+        except YouBlockedUserError:
+            await event.reply("```Please unblock @fakemailbot and try again```")
+            return
+        if response.text.startswith("send"):
+            await event.edit(
+                "```can you kindly disable your forward privacy settings for good?```"
+            )
+        else:
+            await event.edit(f"{response.message.message}")
 
 
 @register(outgoing=True, pattern=r"^\.bin(?: |$)(.*)")
@@ -128,6 +179,8 @@ CMD_HELP.update(
     {
         "anu": ">`.gen` **<bin>**"
         "\nUsage: to generate cc with bin.."
+        "\n\n>  `.genadd`"
+        "\nUsage: Generator Random Address Using Faker"
         "\n\n> `.chk` **<cc>**"
         "\nUsage: to check respond cc."
         "\n\n> `.bin` **<bin number>**"
@@ -136,5 +189,7 @@ CMD_HELP.update(
         "\nUsage: to check your bin information."
         "\n\n> `.alc` **<CC|D|Y|Number>**"
         "\nUsage: to check Your bin is dead or Alive."
+        "\n\n> `.fakemail`"
+        "\nUsage: to get fake email."
     }
 )
