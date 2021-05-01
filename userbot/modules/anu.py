@@ -7,7 +7,6 @@
 import asyncio
 
 from faker import Faker
-from telethon import events
 from telethon.errors.rpcerrorlist import YouBlockedUserError
 
 from userbot import CMD_HELP, bot
