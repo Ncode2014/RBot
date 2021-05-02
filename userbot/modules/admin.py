@@ -143,7 +143,9 @@ async def promote(promt):
     user, rank = await get_user_from_event(promt)
     if not rank:
         rank = "Administrator"  # Just in case.
-    if not user:
+    if user:
+        pass
+    else:
         return
 
     # Try to promote if current user is admin or creator
@@ -184,7 +186,9 @@ async def demote(dmod):
     rank = "admeme"  # dummy rank, lol.
     user = await get_user_from_event(dmod)
     user = user[0]
-    if not user:
+    if user:
+        pass
+    else:
         return
 
     # New rights after demotion
@@ -229,7 +233,9 @@ async def ban(bon):
         return await bon.edit(NO_ADMIN)
 
     user, reason = await get_user_from_event(bon)
-    if not user:
+    if user:
+        pass
+    else:
         return
 
     # Announce that we're going to whack the pest
@@ -283,7 +289,9 @@ async def nothanos(unbon):
 
     user = await get_user_from_event(unbon)
     user = user[0]
-    if not user:
+    if user:
+        pass
+    else:
         return
 
     try:
@@ -322,7 +330,9 @@ async def spider(spdr):
         return await spdr.edit(NO_ADMIN)
 
     user, reason = await get_user_from_event(spdr)
-    if not user:
+    if user:
+        pass
+    else:
         return
 
     self_user = await spdr.client.get_me()
@@ -382,26 +392,30 @@ async def unmoot(unmot):
     await unmot.edit("```Unmuting...```")
     user = await get_user_from_event(unmot)
     user = user[0]
-    if not user:
+    if user:
+        pass
+    else:
         return
 
     if unmute(unmot.chat_id, user.id) is False:
         return await unmot.edit("`Error! User probably already unmuted.`")
-    try:
-        await unmot.client(EditBannedRequest(unmot.chat_id, user.id, UNBAN_RIGHTS))
-        await unmot.edit("```Unmuted Successfully```")
-    except UserIdInvalidError:
-        return await unmot.edit("`Uh oh my unmute logic broke!`")
-    except UserAdminInvalidError:
-        pass
+    else:
 
-    if BOTLOG:
-        await unmot.client.send_message(
-            BOTLOG_CHATID,
-            "#UNMUTE\n"
-            f"USER: [{user.first_name}](tg://user?id={user.id})\n"
-            f"CHAT: {unmot.chat.title}(`{unmot.chat_id}`)",
-        )
+        try:
+            await unmot.client(EditBannedRequest(unmot.chat_id, user.id, UNBAN_RIGHTS))
+            await unmot.edit("```Unmuted Successfully```")
+        except UserIdInvalidError:
+            return await unmot.edit("`Uh oh my unmute logic broke!`")
+        except UserAdminInvalidError:
+            pass
+
+        if BOTLOG:
+            await unmot.client.send_message(
+                BOTLOG_CHATID,
+                "#UNMUTE\n"
+                f"USER: [{user.first_name}](tg://user?id={user.id})\n"
+                f"CHAT: {unmot.chat.title}(`{unmot.chat_id}`)",
+            )
 
 
 @register(incoming=True, disable_errors=True)
@@ -619,7 +633,7 @@ async def rm_deletedacc(show):
 async def get_admin(show):
     """For .admins command, list all of the admins of the chat."""
     info = await show.client.get_entity(show.chat_id)
-    title = info.title or "this chat"
+    title = info.title if info.title else "this chat"
     mentions = f"<b>Admins in {title}:</b> \n"
     try:
         async for user in show.client.iter_participants(
@@ -722,10 +736,18 @@ async def kick(usr):
 async def get_users(show):
     """For .users command, list all of the users in a chat."""
     info = await show.client.get_entity(show.chat_id)
-    title = info.title or "this chat"
-    mentions = f"Users in {title}: \n"
+    title = info.title if info.title else "this chat"
+    mentions = "Users in {}: \n".format(title)
     try:
-        if show.pattern_match.group(1):
+        if not show.pattern_match.group(1):
+            async for user in show.client.iter_participants(show.chat_id):
+                if not user.deleted:
+                    mentions += (
+                        f"\n[{user.first_name}](tg://user?id={user.id}) `{user.id}`"
+                    )
+                else:
+                    mentions += f"\nDeleted Account `{user.id}`"
+        else:
             searchq = show.pattern_match.group(1)
             async for user in show.client.iter_participants(
                 show.chat_id, search=f"{searchq}"
@@ -736,26 +758,19 @@ async def get_users(show):
                     )
                 else:
                     mentions += f"\nDeleted Account `{user.id}`"
-        else:
-            async for user in show.client.iter_participants(show.chat_id):
-                if user.deleted:
-                    mentions += f"\nDeleted Account `{user.id}`"
-                else:
-                    mentions += (
-                        f"\n[{user.first_name}](tg://user?id={user.id}) `{user.id}`"
-                    )
     except ChatAdminRequiredError as err:
         mentions += " " + str(err) + "\n"
     try:
         await show.edit(mentions)
     except MessageTooLongError:
         await show.edit("Damn, this is a huge group. Uploading users lists as file.")
-        with open("userslist.txt", "w+") as file:
-            file.write(mentions)
+        file = open("userslist.txt", "w+")
+        file.write(mentions)
+        file.close()
         await show.client.send_file(
             show.chat_id,
             "userslist.txt",
-            caption=f"Users in {title}",
+            caption="Users in {}".format(title),
             reply_to=show.id,
         )
         remove("userslist.txt")
@@ -765,7 +780,7 @@ async def get_user_from_event(event):
     """Get the user from argument or replied message."""
     args = event.pattern_match.group(1).split(" ", 1)
     extra = None
-    if event.reply_to_msg_id and len(args) != 2:
+    if event.reply_to_msg_id and not len(args) == 2:
         previous_message = await event.get_reply_message()
         user_obj = await event.client.get_entity(previous_message.sender_id)
         extra = event.pattern_match.group(1)
@@ -811,8 +826,8 @@ async def get_user_from_id(user, event):
 async def get_usersdel(show):
     """For .usersdel command, list all of the deleted users in a chat."""
     info = await show.client.get_entity(show.chat_id)
-    title = info.title or "this chat"
-    mentions = f"deletedUsers in {title}: \n"
+    title = info.title if info.title else "this chat"
+    mentions = "deletedUsers in {}: \n".format(title)
     try:
         if not show.pattern_match.group(1):
             async for user in show.client.iter_participants(show.chat_id):
@@ -841,12 +856,13 @@ async def get_usersdel(show):
         await show.edit(
             "Damn, this is a huge group. Uploading deletedusers lists as file."
         )
-        with open("userslist.txt", "w+") as file:
-            file.write(mentions)
+        file = open("userslist.txt", "w+")
+        file.write(mentions)
+        file.close()
         await show.client.send_file(
             show.chat_id,
             "deleteduserslist.txt",
-            caption=f"Users in {title}",
+            caption="Users in {}".format(title),
             reply_to=show.id,
         )
         remove("deleteduserslist.txt")
@@ -856,7 +872,7 @@ async def get_userdel_from_event(event):
     """Get the deleted user from argument or replied message."""
     args = event.pattern_match.group(1).split(" ", 1)
     extra = None
-    if event.reply_to_msg_id and len(args) != 2:
+    if event.reply_to_msg_id and not len(args) == 2:
         previous_message = await event.get_reply_message()
         user_obj = await event.client.get_entity(previous_message.sender_id)
         extra = event.pattern_match.group(1)
@@ -902,7 +918,7 @@ async def get_userdel_from_id(user, event):
 async def get_bots(show):
     """For .bots command, list all of the bots of the chat."""
     info = await show.client.get_entity(show.chat_id)
-    title = info.title or "this chat"
+    title = info.title if info.title else "this chat"
     mentions = f"<b>Bots in {title}:</b>\n"
     try:
         if isinstance(show.to_id, PeerChat):
@@ -923,12 +939,13 @@ async def get_bots(show):
         await show.edit(mentions, parse_mode="html")
     except MessageTooLongError:
         await show.edit("Damn, too many bots here. Uploading bots list as file.")
-        with open("botlist.txt", "w+") as file:
-            file.write(mentions)
+        file = open("botlist.txt", "w+")
+        file.write(mentions)
+        file.close()
         await show.client.send_file(
             show.chat_id,
             "botlist.txt",
-            caption=f"Bots in {title}",
+            caption="Bots in {}".format(title),
             reply_to=show.id,
         )
         remove("botlist.txt")
