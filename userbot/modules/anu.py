@@ -7,8 +7,8 @@
 import asyncio
 
 from faker import Faker
-from telethon.errors.rpcerrorlist import YouBlockedUserError
 from geopy.geocoders import Nominatim
+from telethon.errors.rpcerrorlist import YouBlockedUserError
 from telethon.tl import types
 
 from userbot import CMD_HELP, bot
@@ -176,6 +176,7 @@ async def _(event):
         await event.edit(get.message)
         await event.client.delete_messages(conv.chat_id, [send.id, get.id])
 
+
 @register(outgoing=True, pattern="^.gps(?: |$)(.*)")
 async def gps(event):
     if event.fwd_from:
@@ -197,12 +198,7 @@ async def gps(event):
         lon = geoloc.longitude
         lat = geoloc.latitude
         await reply_to_id.reply(
-            input_str,
-            file=types.InputMediaGeoPoint(
-                types.InputGeoPoint(
-                    lat, lon
-                )
-            )
+            input_str, file=types.InputMediaGeoPoint(types.InputGeoPoint(lat, lon))
         )
         await event.delete()
     else:
