@@ -10,6 +10,8 @@ cowpy
 eksipy
 emoji
 faker
+Faker==8.1.2
+geopy
 git+https://github.com/httplib2/httplib2
 git+https://github.com/jmoiron/humanize
 git+https://github.com/Joeclinton1/google-images-download
@@ -23,7 +25,6 @@ git+https://github.com/rthalley/dnspython
 git+https://github.com/TheDeezLoader/pyDeezloader
 git+https://github.com/vstinner/hachoir
 git+https://github.com/ytdl-org/youtube-dl
-Faker==8.1.2
 gitpython
 glitch_this
 google-api-python-client
@@ -33,7 +34,6 @@ googletrans==3.1.0a0
 gTTS
 gTTS-token
 heroku3
-geopy
 html_telegraph_poster
 jikanpy
 js2py
