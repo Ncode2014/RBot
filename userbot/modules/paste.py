@@ -36,7 +36,6 @@ async def paste(pstl):
                 TEMP_DOWNLOAD_DIRECTORY,
             )
             f_ext = os.path.splitext(downloaded_file_name)[-1]
-
             async with async_open(downloaded_file_name, "r") as fd:
                 try:
                     message = await fd.read()

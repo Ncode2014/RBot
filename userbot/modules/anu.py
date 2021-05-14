@@ -7,7 +7,9 @@
 import asyncio
 
 from faker import Faker
+from geopy.geocoders import Nominatim
 from telethon.errors.rpcerrorlist import YouBlockedUserError
+from telethon.tl import types
 
 from userbot import CMD_HELP, bot
 from userbot.events import register
@@ -175,6 +177,34 @@ async def _(event):
         await event.client.delete_messages(conv.chat_id, [send.id, get.id])
 
 
+@register(outgoing=True, pattern="^.gps(?: |$)(.*)")
+async def gps(event):
+    if event.fwd_from:
+        return
+    reply_to_id = event.message
+    if event.reply_to_msg_id:
+        reply_to_id = await event.get_reply_message()
+    input_str = event.pattern_match.group(1)
+
+    if not input_str:
+        return await event.edit("`Sir, please provide the place you are looking for`")
+
+    await event.edit("`Find This Location On The Map Server....`")
+
+    geolocator = Nominatim(user_agent="Employer")
+    geoloc = geolocator.geocode(input_str)
+
+    if geoloc:
+        lon = geoloc.longitude
+        lat = geoloc.latitude
+        await reply_to_id.reply(
+            input_str, file=types.InputMediaGeoPoint(types.InputGeoPoint(lat, lon))
+        )
+        await event.delete()
+    else:
+        await event.edit("`Master I Cannot Find It`")
+
+
 CMD_HELP.update(
     {
         "anu": ">`.gen` **<bin>**"
@@ -191,5 +221,7 @@ CMD_HELP.update(
         "\nUsage: to check Your bin is dead or Alive."
         "\n\n> `.fakemail`"
         "\nUsage: to get fake email."
+        "\n\n> `.gps`"
+        "\nUsage: To Get Map Location"
     }
 )

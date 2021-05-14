@@ -9,10 +9,10 @@ from userbot.events import register
 
 
 async def get_nekos_img(args):
+    nekos_baseurl = "https://nekos.life/api/v2/img/"
     if args == "random_hentai_gif":
         args = "Random_hentai_gif"
     async with ClientSession() as ses:
-        nekos_baseurl = "https://nekos.life/api/v2/img/"
         async with ses.get(nekos_baseurl + args) as r:
             result = await r.json()
             return result
