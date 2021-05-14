@@ -755,7 +755,7 @@ async def get_users(show):
         await show.client.send_file(
             show.chat_id,
             "userslist.txt",
-            caption="Users in {}".format(title),
+            caption=f"Users in {title}",
             reply_to=show.id,
         )
         remove("userslist.txt")
@@ -846,7 +846,7 @@ async def get_usersdel(show):
         await show.client.send_file(
             show.chat_id,
             "deleteduserslist.txt",
-            caption="Users in {}".format(title),
+            caption=f"Users in {title}",
             reply_to=show.id,
         )
         remove("deleteduserslist.txt")
@@ -928,7 +928,7 @@ async def get_bots(show):
         await show.client.send_file(
             show.chat_id,
             "botlist.txt",
-            caption="Bots in {}".format(title),
+            caption=f"Bots in {title}",
             reply_to=show.id,
         )
         remove("botlist.txt")
