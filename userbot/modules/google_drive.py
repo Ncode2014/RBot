@@ -128,13 +128,23 @@ async def generate_credentials(gdrive):
             )
             return False
     else:
-        await gdrive.edit(
-            "`[AUTHENTICATE - ERROR]`\n\n"
-            "`Status` : **BAD**\n"
-            "`Reason` : please get your **G_DRIVE_DATA** "
-            "[here](https://telegra.ph/How-To-Setup-Google-Drive-04-03)"
-        )
-        return False
+        """- Only for old user -"""
+        if G_DRIVE_CLIENT_ID is None and G_DRIVE_CLIENT_SECRET is None:
+            await gdrive.edit(
+                "`[AUTHENTICATE - ERROR]`\n\n"
+                "`Status` : **BAD**\n"
+                "`Reason` : please get your **G_DRIVE_DATA** "
+                "[here](https://telegra.ph/How-To-Setup-Google-Drive-04-03)"
+            )
+            return False
+        configs = {
+            "installed": {
+                "client_id": G_DRIVE_CLIENT_ID,
+                "client_secret": G_DRIVE_CLIENT_SECRET,
+                "auth_uri": GOOGLE_AUTH_URI,
+                "token_uri": GOOGLE_TOKEN_URI,
+            }
+        }
     await gdrive.edit("`Creating credentials...`")
     flow = InstalledAppFlow.from_client_config(
         configs, SCOPES, redirect_uri=REDIRECT_URI
@@ -319,10 +329,7 @@ async def download(gdrive, service, uri=None):
                 await reset_parentId()
                 return reply
     except Exception as e:
-        status = status.replace("DOWNLOAD]", "ERROR]")
-        reply += (
-            f"`{status}`\n\n" "`Status` : **failed**\n" f"`Reason` : `{str(e)}`\n\n"
-        )
+        reply += f"`[ERROR]`\n\n" "`Status` : **failed**\n" f"`Reason` : `{str(e)}`\n\n"
         return reply
     return
 
@@ -1187,7 +1194,6 @@ async def set_upload_folder(gdrive):
         ext_id = re.findall(r"\bhttps?://drive\.google\.com\S+", inp)[0]
     except IndexError:
         """- if given value isn't folderURL assume it's an Id -"""
-        c1 = any(map(str.isdigit, inp))
         if "-" in inp or "_" in inp:
             c2 = True
         else:

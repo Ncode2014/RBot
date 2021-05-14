@@ -4,6 +4,7 @@
 # you may not use this file except in compliance with the License.
 """ Userbot module for having some fun with people. """
 
+import random
 from asyncio import sleep
 from collections import deque
 from random import choice, getrandbits, randint
@@ -887,7 +888,7 @@ async def faces(siwis):
 
 
 @register(outgoing=True, pattern=r"^\.owo(?: |$)(.*)")
-async def faces(owo):
+async def owo_faces(owo):
     """UwU"""
     textx = await owo.get_reply_message()
     message = owo.pattern_match.group(1)
@@ -1121,6 +1122,36 @@ async def scam(event):
         return
 
 
+@register(pattern=r".coin(?: |$(.*)", outgoing=True)
+async def _(event):
+    if event.fwd_from:
+        return
+    r = random.randint(1, 100)
+    input_str = event.pattern_match.group(1)
+    if input_str:
+        input_str = input_str.lower()
+    if r % 2 == 1:
+        if input_str == "heads":
+            await event.edit("The coin landed on: **Heads**. \n You were correct.")
+        elif input_str == "tails":
+            await event.edit(
+                "The coin landed on: **Heads**. \n You weren't correct, try again ..."
+            )
+        else:
+            await event.edit("The coin landed on: **Heads**.")
+    elif r % 2 == 0:
+        if input_str == "tails":
+            await event.edit("The coin landed on: **Tails**. \n You were correct.")
+        elif input_str == "heads":
+            await event.edit(
+                "The coin landed on: **Tails**. \n You weren't correct, try again ..."
+            )
+        else:
+            await event.edit("The coin landed on: **Tails**.")
+    else:
+        await event.edit("¯\\_(ツ)_/¯")
+
+
 @register(pattern=r".type(?: |$)(.*)", outgoing=True)
 async def typewriter(typew):
     """Just a small command to make your keyboard become a typewriter!"""
@@ -1210,6 +1241,8 @@ CMD_HELP.update(
         "\nUsage: Let me Google that for you real quick !!"
         "\n\n>`.decide [Alternates: (.yes, .no, .maybe)]`"
         "\nUsage: Make a quick decision."
+        "\n\n> `.coin <Heads|tails>`"
+        "\nUsage: Tails Or Coin Game."
         "\n\n>`.scam <action> <time>`"
         "\n[Available Actions: (typing, contact, game, location, voice, round, video, photo, document, cancel)]"
         "\nUsage: Create fake chat actions, for fun. (Default action: typing)"
