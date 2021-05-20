@@ -1194,10 +1194,7 @@ async def set_upload_folder(gdrive):
         ext_id = re.findall(r"\bhttps?://drive\.google\.com\S+", inp)[0]
     except IndexError:
         """- if given value isn't folderURL assume it's an Id -"""
-        if any(map(str.isdigit, inp)):
-            c1 = True
-        else:
-            c1 = False
+        c1 = any(map(str.isdigit, inp))
         if "-" in inp or "_" in inp:
             c2 = True
         else:
