@@ -19,7 +19,6 @@ import asyncio
 import re
 import hashlib
 from html_telegraph_poster import TelegraphPoster
-from typing import List
 
 
 async def md5(fname: str) -> str:
