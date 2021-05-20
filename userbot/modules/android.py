@@ -6,7 +6,6 @@
 """ Userbot module containing commands related to android"""
 
 import asyncio
-import json
 import math
 import os
 import re

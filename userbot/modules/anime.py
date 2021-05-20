@@ -395,6 +395,7 @@ async def upcoming(message):
             break
         await message.edit(rep, parse_mode="html")
 
+
 @register(outgoing=True, pattern=r"^\.whatanime$")
 async def whatanime(e):
     media = e.media
