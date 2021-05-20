@@ -70,7 +70,7 @@ def human_to_bytes(size: str) -> int:
     return int(float(number) * units[unit])
 
 
-async def run_cmd(cmd: List) -> (bytes, bytes):
+async def run_cmd(cmd: list) -> (bytes, bytes):
     process = await asyncio.create_subprocess_exec(
         *cmd,
         stdout=asyncio.subprocess.PIPE,
