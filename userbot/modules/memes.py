@@ -1080,7 +1080,7 @@ async def let_me_google_that_for_you(lmgtfy_q):
     )
 
 
-@register(pattern=r".scam(?: |$)(.*)", outgoing=True)
+@register(pattern=r"^\.scam(?: |$)(.*)", outgoing=True)
 async def scam(event):
     """Just a small command to fake chat actions for fun !!"""
     options = [
@@ -1122,8 +1122,8 @@ async def scam(event):
         return
 
 
-@register(pattern=r".coin(?: |$(.*)", outgoing=True)
-async def _(event):
+@register(pattern=r"^\.coin(?: |$)(.*)", outgoing=True)
+async def coin(event):
     if event.fwd_from:
         return
     r = random.randint(1, 100)
