@@ -24,7 +24,10 @@ async def genadd(event):
     adre = cc.address()
     zipcd = cc.zipcode()
 
-    await edit_or_reply(event, f"__**👤 NAME :- **__\n`{name}`\n\n__**🏡 ADDRESS :- **__\n`{adre}`\n\n__**🏘️  ZIPCODE :- **__\n`{zipcd}`",)
+    await edit_or_reply(
+        event,
+        f"__**👤 NAME :- **__\n`{name}`\n\n__**🏡 ADDRESS :- **__\n`{adre}`\n\n__**🏘️  ZIPCODE :- **__\n`{zipcd}`",
+    )
 
 
 @register(outgoing=True, pattern=r"^\.gen(?: |$)(.*)")
@@ -71,7 +74,7 @@ async def _(event):
         await event.client.delete_messages(conv.chat_id, [send.id, get.id])
 
 
-@register(outgoing=True, pattern="^\.fakemail(?: |$)(.*)")
+@register(outgoing=True, pattern="^\\.fakemail(?: |$)(.*)")
 async def fakemail(event):
     if event.fwd_from:
         return
