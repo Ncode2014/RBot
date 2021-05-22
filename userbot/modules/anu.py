@@ -16,18 +16,15 @@ from userbot.events import register
 
 
 @register(outgoing=True, pattern=r"^\.genadd(?: |$)(.*)")
-async def _(event):
+async def genadd(event):
     if event.fwd_from:
         return
     cc = Faker()
     name = cc.name()
     adre = cc.address()
-    zipcd = cc.zipcode
+    zipcd = cc.zipcode()
 
-    await edit_or_reply(
-        event,
-        f"__**👤 NAME :- **__\n`{name}`\n\n__**🏡 ADDRESS :- **__\n`{adre}`\n\n__**🏘️  ZIPCODE :- **__\n`{zipcd}`",
-    )
+    await edit_or_reply(event, f"__**👤 NAME :- **__\n`{name}`\n\n__**🏡 ADDRESS :- **__\n`{adre}`\n\n__**🏘️  ZIPCODE :- **__\n`{zipcd}`",)
 
 
 @register(outgoing=True, pattern=r"^\.gen(?: |$)(.*)")
@@ -74,8 +71,8 @@ async def _(event):
         await event.client.delete_messages(conv.chat_id, [send.id, get.id])
 
 
-@register(outgoing=True, pattern="^\\.fakemail(?: |$)(.*)")
-async def _(event):
+@register(outgoing=True, pattern="^\.fakemail(?: |$)(.*)")
+async def fakemail(event):
     if event.fwd_from:
         return
     if not event.reply_to_msg_id:
