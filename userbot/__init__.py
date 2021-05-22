@@ -77,7 +77,7 @@ UPSTREAM_REPO_URL = os.environ.get(
     "https://github.com/BianSepang/WeebProject.git")
 # UPSTREAM_REPO_URL branch, the default is master
 UPSTREAM_REPO_BRANCH = os.environ.get(
-    "UPSTREAM_REPO_BRANCH", "master")
+    "UPSTREAM_REPO_BRANCH", "dev")
 
 # Console verbose logging
 CONSOLE_LOGGER_VERBOSE = sb(os.environ.get("CONSOLE_LOGGER_VERBOSE", "False"))

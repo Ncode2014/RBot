@@ -1,4 +1,5 @@
 # Copyright (C) 2019 The Raphielscape Company LLC.
+# Copyright (C) 2019 The Raphielscape Company LLC.
 #
 # Licensed under the Raphielscape Public License, Version 1.c (the "License");
 # you may not use this file except in compliance with the License.
@@ -91,7 +92,7 @@ async def deploy(event, repo, ups_rem, ac_br, txt):
         else:
             remote = repo.create_remote("heroku", heroku_git_url)
         try:
-            remote.push(refspec="HEAD:refs/heads/master", force=True)
+            remote.push(refspec="HEAD:refs/heads/dev", force=True)
         except Exception as error:
             await event.edit(f"{txt}\n`Here is the error log:\n{error}`")
             return repo.__del__()
@@ -151,9 +152,9 @@ async def upstream(event):
         origin = repo.create_remote("upstream", off_repo)
         origin.fetch()
         force_update = True
-        repo.create_head("master", origin.refs.master)
-        repo.heads.master.set_tracking_branch(origin.refs.master)
-        repo.heads.master.checkout(True)
+        repo.create_head("dev", origin.refs.dev)
+        repo.heads.dev.set_tracking_branch(origin.refs.dev)
+        repo.heads.dev.checkout(True)
 
     ac_br = repo.active_branch.name
     if ac_br != UPSTREAM_REPO_BRANCH:
