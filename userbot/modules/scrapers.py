@@ -540,7 +540,7 @@ async def yt_search(event):
             channel = i["channel"]
             duration = i["duration"]
             views = i["views"]
-            owner = "https://youtube.com" +i["owner_url"]
+            owner = "https://youtube.com" + i["owner_url"]
             output += f"[{title}]({link})\nChannel: `{channel}`\nChannel Link: `{owner}`\nDuration: {duration} | {views}\n\n"
         except IndexError:
             break
