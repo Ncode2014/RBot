@@ -627,6 +627,7 @@ async def download_video(v_url):
             "outtmpl": "%(id)s.%(ext)s",
             "quiet": True,
             "logtostderr": False,
+            "external_downloader": "aria2c",
         }
         audio = True
 
@@ -650,6 +651,7 @@ async def download_video(v_url):
             "logtostderr": False,
             "quiet": True,
             "proxy": "",
+            "external_downloader": "aria2c",
             "force-ipv4": True,
         }
         video = True
