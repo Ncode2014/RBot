@@ -1,6 +1,6 @@
 {
-  "name": "WeebProject UserBot",
-  "description": "[WeebProject] A modular Telegram userbot running on Python 3.8",
+  "name": "Weebmax Project",
+  "description": "[WeebMax forked Weebproject] A modular Telegram userbot running on Python 3.9",
   "keywords": [
     "telegram",
     "userbot",
@@ -8,7 +8,7 @@
     "modular",
     "productivity"
   ],
-  "repository": "https://github.com/BianSepang/WeebProject",
+  "repository": "https://github.com/Ncode2014/nikabut",
   "website": "https://telegra.ph/How-to-host-a-Telegram-Userbot-11-02",
   "stack": "container",
   "env": {
