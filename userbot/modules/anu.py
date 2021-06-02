@@ -131,8 +131,8 @@ async def _(event):
         await event.client.delete_messages(conv.chat_id, [send.id, get.id])
 
 
-@register(outgoing=True, pattern=r"^\.vbv(?: |$(.*)")
-async def _(event):
+@register(outgoing=True, pattern=r"^\.vbv(?: |$)(.*)")
+async def vb(event):
     if event.fwd_from:
         return
     query = event.pattern_match.group(1)
@@ -148,7 +148,7 @@ async def _(event):
         except YouBlockedUserError:
             return await event.reply("Unblock @Carol5_bot or chat them")
         if get.text.startswith("Wait for result..."):
-            return await event.edit(f"Your VBV {query} Invalid!")
+            return await event.edit(f"Your VBV Invalid!")
         await event.edit(get.message)
         await event.client.delete_messages(conv.chat_id, [send.id, get.id])
 
