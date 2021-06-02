@@ -12,9 +12,15 @@ from os import environ, execle
 from random import randint
 from time import sleep
 
-from userbot import BOTLOG, BOTLOG_CHATID, CMD_HELP, bot
+from heroku3 import from_key
+
+from userbot import BOTLOG, BOTLOG_CHATID, CMD_HELP, HEROKU_API_KEY, HEROKU_APP_NAME
 from userbot.events import register
 from userbot.utils import time_formatter
+
+# =========== HEROKU =================== #
+HEROKU_APP = from_key(HEROKU_API_KEY).apps()[HEROKU_APP_NAME]
+# ======================================= #
 
 
 @register(outgoing=True, pattern=r"^\.random")
@@ -49,10 +55,19 @@ async def sleepybot(time):
 @register(outgoing=True, pattern=r"^\.shutdown$")
 async def killthebot(event):
     """For .shutdown command, shut the bot down."""
-    await event.edit("`Shutting down...`")
+    if event.fwd_from:
+        return
     if BOTLOG:
-        await event.client.send_message(BOTLOG_CHATID, "#SHUTDOWN \n" "Bot shut down")
-    await bot.disconnect()
+        await event.client.send_message(
+            BOTLOG_CHATID,
+            "#Shutdown \n"
+            "Bot has been Shutdown!\nIf you want your bot active again\nPlease Turn on again your dyno",
+        )
+    await event.edit("`Weebmax has been shutdown.`")
+    if HEROKU_APP is not None:
+        HEROKU_APP.process_formation()["worker"].scale(0)
+    else:
+        sys.exit(0)
 
 
 @register(outgoing=True, pattern=r"^\.restart$")

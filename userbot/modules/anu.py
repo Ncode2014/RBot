@@ -131,6 +131,28 @@ async def _(event):
         await event.client.delete_messages(conv.chat_id, [send.id, get.id])
 
 
+@register(outgoing=True, pattern=r"^\.vbv(?: |$(.*)")
+async def _(event):
+    if event.fwd_from:
+        return
+    query = event.pattern_match.group(1)
+    if not query:
+        return await event.edit("**Silahkan masukan cc yang mau dicek vbv**")
+    await event.edit(f"```checking Your CC {query}```")
+    async with bot.conversation("@Carol5_bot") as conv:
+        try:
+            send = await conv.send_message(f"/vbv {query}")
+            await asyncio.sleep(10)
+            get = await conv.get_response()
+            await bot.send_read_acknowledge(conv.chat_id)
+        except YouBlockedUserError:
+            return await event.reply("Unblock @Carol5_bot or chat them")
+        if get.text.startswith("Wait for result..."):
+            return await event.edit(f"Your VBV {query} Invalid!")
+        await event.edit(get.message)
+        await event.client.delete_messages(conv.chat_id, [send.id, get.id])
+
+
 @register(outgoing=True, pattern=r"^\.skey(?: |$)(.*)")
 async def _(event):
     if event.fwd_from:
