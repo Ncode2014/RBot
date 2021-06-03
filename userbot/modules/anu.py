@@ -241,6 +241,8 @@ CMD_HELP.update(
         "\nUsage: to check your bin information."
         "\n\n> `.alc` **<CC|D|Y|Number>**"
         "\nUsage: to check Your bin is dead or Alive."
+        "\n\n> `.vbv` **<CC|D|Y|Number>**"
+        "\nUsage: Check how possibble work."
         "\n\n> `.fakemail`"
         "\nUsage: to get fake email."
         "\n\n> `.gps`"
