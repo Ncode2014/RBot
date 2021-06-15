@@ -6,15 +6,16 @@
 """ Userbot initialization. """
 
 import os
-from sys import version_info
-from logging import basicConfig, getLogger, INFO, DEBUG
+import signal
 from distutils.util import strtobool as sb
+from logging import DEBUG, INFO, basicConfig, getLogger
 from platform import python_version
+from sys import version_info
 from time import sleep
 
+from dotenv import load_dotenv
 from pylast import LastFMNetwork, md5
 from pySmartDL import SmartDL
-from dotenv import load_dotenv
 from requests import get
 from telethon import TelegramClient, version
 from telethon.sessions import StringSession
@@ -30,19 +31,23 @@ if CONSOLE_LOGGER_VERBOSE:
         level=DEBUG,
     )
 else:
-    basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-                level=INFO)
+    basicConfig(
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        level=INFO)
 LOGS = getLogger(__name__)
 
 if version_info[0] < 3 or version_info[1] < 8:
-    LOGS.info("You MUST have a python version of at least 3.8."
-              "Multiple features depend on this. Bot quitting.")
+    LOGS.info(
+        "You MUST have a python version of at least 3.8."
+        "Multiple features depend on this. Bot quitting."
+    )
     quit(1)
 
 # Check if the config was edited by using the already used variable.
 # Basically, its the 'virginity check' for the config file ;)
 CONFIG_CHECK = os.environ.get(
-    "___________PLOX_______REMOVE_____THIS_____LINE__________", None)
+    "___________PLOX_______REMOVE_____THIS_____LINE__________", None
+)
 
 if CONFIG_CHECK:
     LOGS.info(
@@ -91,8 +96,8 @@ OCR_SPACE_API_KEY = os.environ.get("OCR_SPACE_API_KEY", None)
 
 # Default .alive name anf logo
 ALIVE_NAME = os.environ.get("ALIVE_NAME") or None
-ALIVE_LOGO = os.environ.get(
-    "ALIVE_LOGO") or "https://telegra.ph/file/9e888cb1e485adf3a179e.mp4"
+ALIVE_LOGO = (os.environ.get("ALIVE_LOGO")
+              or "https://telegra.ph/file/9e888cb1e485adf3a179e.mp4")
 
 # remove.bg API key
 REM_BG_API_KEY = os.environ.get("REM_BG_API_KEY", None)
@@ -149,8 +154,8 @@ if LASTFM_API and LASTFM_SECRET and LASTFM_USERNAME and LASTFM_PASS:
 G_DRIVE_DATA = os.environ.get("G_DRIVE_DATA", None)
 G_DRIVE_FOLDER_ID = os.environ.get("G_DRIVE_FOLDER_ID", None)
 G_DRIVE_INDEX_URL = os.environ.get("G_DRIVE_INDEX_URL", None)
-TEMP_DOWNLOAD_DIRECTORY = os.environ.get("TMP_DOWNLOAD_DIRECTORY",
-                                         "./downloads/")
+TEMP_DOWNLOAD_DIRECTORY = os.environ.get(
+    "TMP_DOWNLOAD_DIRECTORY", "./downloads/")
 
 # Terminal Alias
 TERM_ALIAS = os.environ.get("TERM_ALIAS", None)
@@ -164,14 +169,12 @@ USR_TOKEN = os.environ.get("USR_TOKEN_UPTOBOX", None)
 
 # Setting Up CloudMail.ru and MEGA.nz extractor binaries,
 # and giving them correct perms to work properly.
-if not os.path.exists('bin'):
-    os.mkdir('bin')
+if not os.path.exists("bin"):
+    os.mkdir("bin")
 
 binaries = {
-    "https://raw.githubusercontent.com/adekmaulana/megadown/master/megadown":
-    "bin/megadown",
-    "https://raw.githubusercontent.com/KenHV/KensurBot/master/bin/cmrudl.py":
-    "bin/cmrudl"
+    "https://raw.githubusercontent.com/adekmaulana/megadown/master/megadown": "bin/megadown",
+    "https://raw.githubusercontent.com/KenHV/cmrudl.py/master/cmrudl.py": "bin/cmrudl",
 }
 
 for binary, path in binaries.items():
@@ -179,39 +182,15 @@ for binary, path in binaries.items():
     downloader.start()
     os.chmod(path, 0o755)
 
+def shutdown_bot(signum, frame):
+    LOGS.info("Received SIGTERM.")
+    bot.disconnect()
+    sys.exit(143)
 
-def migration_workaround():
-    try:
-        from userbot.modules.sql_helper.globals import addgvar, delgvar, gvarstatus
-    except AttributeError:
-        return None
-
-    old_ip = gvarstatus("public_ip")
-    new_ip = get("https://api.ipify.org").text
-
-    if old_ip is None:
-        delgvar("public_ip")
-        addgvar("public_ip", new_ip)
-        return None
-
-    if old_ip == new_ip:
-        return None
-
-    sleep_time = 180
-    LOGS.info(
-        f"A change in IP address is detected, waiting for {sleep_time / 60} minutes before starting the bot."
-    )
-    sleep(sleep_time)
-    LOGS.info("Starting bot...")
-
-    delgvar("public_ip")
-    addgvar("public_ip", new_ip)
-    return None
-
+signal.signal(signal.SIGTERM, shutdown_bot)
 
 if HEROKU_APP_NAME is not None and HEROKU_API_KEY is not None:
     migration_workaround()
-
 
 # 'bot' variable
 if STRING_SESSION:
@@ -252,7 +231,8 @@ with bot:
     except BaseException:
         LOGS.info(
             "BOTLOG_CHATID environment variable isn't a "
-            "valid entity. Check your environment variables/config.env file.")
+            "valid entity. Check your environment variables/config.env file."
+        )
         quit(1)
 
 
@@ -268,12 +248,15 @@ async def update_restart_msg(chat_id, msg_id):
     await bot.edit_message(chat_id, msg_id, message)
     return True
 
+
 try:
     from userbot.modules.sql_helper.globals import delgvar, gvarstatus
 
     chat_id, msg_id = gvarstatus("restartstatus").split("\n")
     try:
         with bot:
+            bot.loop.run_until_complete(update_restart_msg(int(chat_id), int(msg_id)))
+            
             bot.loop.run_until_complete(
                 update_restart_msg(
                     int(chat_id), int(msg_id)))

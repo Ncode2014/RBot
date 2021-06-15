@@ -23,7 +23,9 @@ async def notes_active(svd):
     for note in notes:
         if message == "`There are no saved notes in this chat`":
             message = "Notes saved in this chat:\n"
-        message += f"`#{note.keyword}`\n"
+            message += f"`#{note.keyword}`\n"
+        else:
+            message += f"`#{note.keyword}`\n"
     await svd.edit(message)
 
 

@@ -138,7 +138,10 @@ async def filters_active(event):
     for filt in filters:
         if transact == "`There are no filters in this chat.`":
             transact = "Active filters in this chat:\n"
-        transact += f"`{filt.keyword}`\n"
+            transact += f"`{filt.keyword}`\n"
+        else:
+            transact += f"`{filt.keyword}`\n"
+
     await event.edit(transact)
 
 
